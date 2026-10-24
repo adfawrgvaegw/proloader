@@ -1,0 +1,80 @@
+{
+  format_version: 1,
+  size: [
+    1,
+    1,
+    1
+  ],
+  structure: {
+    block_indices: [
+      [
+        0
+      ],
+      [
+        -1
+      ]
+    ],
+    entities: [],
+    palette: {
+      default: {
+        block_palette: [
+          {
+            name: "minecraft:trial_spawner",
+            states: {
+              ominous: 0b,
+              trial_spawner_state: 1
+            },
+            val: 1s,
+            version: 18153475
+          }
+        ],
+        block_position_data: {
+          0: {
+            block_entity_data: {
+              cooldown_end_at: 0L,
+              current_mobs: [],
+              id: "TrialSpawner",
+              isMovable: 1b,
+              next_mob_spawns_at: 0L,
+              normal_config: {
+                items_to_drop_when_ominous: "loot_tables/spawners/trial_chamber/items_to_drop_when_ominous.json",
+                loot_tables_to_eject: [
+                  {
+                    data: "loot_tables/spawners/trial_chamber/key.json",
+                    weight: 1
+                  },
+                  {
+                    data: "loot_tables/spawners/trial_chamber/consumables.json",
+                    weight: 1
+                  }
+                ],
+                simultaneous_mobs: 2f,
+                simultaneous_mobs_added_per_player: 1f,
+                spawn_range: 4,
+                target_cooldown_length: 36000,
+                ticks_between_spawn: 20,
+                total_mobs: 6f,
+                total_mobs_added_per_player: 2f
+              },
+              ominous_config: {},
+              registered_players: [],
+              required_player_range: 14,
+              spawn_data: {
+                TypeId: "minecraft:chicken",
+                Weight: 1
+              },
+              x: -29,
+              y: 65,
+              z: 9
+            }
+          }
+        }
+      }
+    }
+  },
+  structure_world_origin: [
+    -29,
+    65,
+    9
+  ]
+}

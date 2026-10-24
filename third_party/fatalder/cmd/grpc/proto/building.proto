@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package fatalder.proto.building;
+
+import "request.proto";
+import "response.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/define/building";
+
+message BuildingInfo {
+  string filename = 1; // full
+  int64 size = 2; // byte
+  string md5 = 3;
+  int64 create_time = 4;
+}
+
+message BuildingChunk {
+  bytes content = 1;
+  string filename = 2;
+}
+
+message ListBuildingInfoResponse {
+  repeated BuildingInfo info = 1;
+  string error = 2;
+}
+
+message GetBuildingInfoRequest {
+  string filename = 1;
+}
+
+message GetBuildingInfoResponse {
+  BuildingInfo info = 1;
+  string error = 2;
+}
+
+message DeleteBuildingRequest {
+  string filename = 1;
+}
+
+service BuildingService {
+  rpc UploadBuilding(stream BuildingChunk) returns (response.BoolResponse);
+  rpc DownloadBuilding(response.StringResponse) returns (stream BuildingChunk);
+  rpc RenameBuilding(response.StringResponse) returns (response.StringResponse);
+  rpc ListBuildingInfo(request.EmptyRequest) returns (ListBuildingInfoResponse);
+  rpc GetBuildingInfo(GetBuildingInfoRequest) returns (GetBuildingInfoResponse);
+  rpc DeleteBuilding(DeleteBuildingRequest) returns (response.StringResponse);
+}

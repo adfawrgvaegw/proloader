@@ -1,0 +1,12 @@
+[submodule "modules/WaterStructure"]
+	path = modules/WaterStructure
+	url = git@github.com:Yeah114/WaterStructure.git
+[submodule "modules/FunShuttler"]
+	path = modules/FunShuttler
+	url = git@github.com:Yeah114/FunShuttler.git
+	branch = main
+	shallow = true
+[submodule "modules/g79client"]
+	path = modules/g79client
+	url = git@github.com:Yeah114/g79client.git
+	branch = main

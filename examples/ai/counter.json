@@ -1,0 +1,10 @@
+{
+  "format": "proloader-ai-v1",
+  "edition": "bedrock",
+  "dimension": "overworld",
+  "origin": [12000, 284, 12014],
+  "blocks": [
+    {"at": [0, 0, 0], "type": "impulse", "facing": "east", "command": "scoreboard players add pulse plai_test 1", "name": "AI pulse counter"},
+    {"at": [1, 0, 0], "type": "chain", "facing": "east", "auto": true, "conditional": true, "command": "scoreboard players add chain plai_test 1", "name": "AI conditional chain"}
+  ]
+}

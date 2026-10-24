@@ -1,0 +1,73 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# proloader 运行时数据
+~/.proloader/
+proloader_sessions/
+*.npz
+!tests/fixtures/*.npz
+session_*.jsonl
+
+# 抓包/凭证（绝不提交）
+*.token
+*credentials*
+netease_token.json
+cookie.txt
+cache/netease/
+
+# Local backup: keep private runtime data and generated assets outside Git
+/cache/
+/buildings/
+/bin/
+/bds/
+/fastbuilder
+/omega-launcher
+/.trae/
+/.proloader/
+.env
+.env.*
+*.pcap
+*.pcapng
+*.key
+*.pem
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Additional private exports and authentication artifacts
+*.p12
+*.pfx
+*.session
+*.har
+*.flows
+**/cookie.json
+**/pe.json
+**/profile.json
+**/credentials.json
+RELEASE_MANIFEST.local.json

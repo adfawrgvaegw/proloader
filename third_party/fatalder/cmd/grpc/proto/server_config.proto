@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package fatalder.proto.server_config;
+
+import "request.proto";
+import "response.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/define/server_config";
+
+message ServerConfig {
+  string auth_server_address = 1;
+  string auth_server_token = 2;
+  string auth_username = 3;
+  string auth_password = 4;
+  string rental_server_code = 5;
+  string rental_server_passcode = 6;
+}
+
+message ServerConfigEntry {
+  string name = 1;
+  ServerConfig config = 2;
+}
+
+message ListServerConfigsResponse {
+  repeated ServerConfigEntry configs = 1;
+  string error = 2;
+}
+
+message GetServerConfigRequest {
+  string name = 1;
+}
+
+message GetServerConfigResponse {
+  ServerConfig config = 1;
+  string error = 2;
+}
+
+message SaveServerConfigRequest {
+  string name = 1;
+  ServerConfig config = 2;
+}
+
+message DeleteServerConfigRequest {
+  string name = 1;
+}
+
+service ServerConfigService {
+  rpc ListServerConfigs(request.EmptyRequest) returns (ListServerConfigsResponse);
+  rpc GetServerConfig(GetServerConfigRequest) returns (GetServerConfigResponse);
+  rpc SaveServerConfig(SaveServerConfigRequest) returns (response.StringResponse);
+  rpc DeleteServerConfig(DeleteServerConfigRequest) returns (response.StringResponse);
+}

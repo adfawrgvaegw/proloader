@@ -1,0 +1,940 @@
+{
+  "format": "proloader-ai-v1",
+  "edition": "bedrock",
+  "origin": [
+    12000,
+    280,
+    12000
+  ],
+  "dimension": "overworld",
+  "blocks": [
+    {
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "type": "repeat",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run replaceitem entity @a[tag=!pl_sm_bot] slot.hotbar 8 destroy snowball 16 0 {\"minecraft:item_lock\":{\"mode\":\"lock_in_slot\"},\"minecraft:keep_on_death\":{}}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        1,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @e[type=snowball] as @p[tag=!pl_sm_bot,r=3] unless entity @s[scores={菜单=0..}] run scoreboard players set @s[rx=89] dh 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        2,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @e[type=snowball] run scoreboard players set @p[tag=!pl_sm_bot,r=3] dh1 0",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        3,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @e[type=snowball] as @p[tag=!pl_sm_bot,r=3] at @s unless entity @s[scores={菜单=0}] run scoreboard players add @s 菜单 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        4,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @e[type=snowball] run playsound block.end_portal_frame.fill @p[tag=!pl_sm_bot,r=3]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        5,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @e[type=snowball] run playsound beacon.deactivate @p[tag=!pl_sm_bot,r=3]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        6,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @e[type=snowball] at @s if entity @p[tag=!pl_sm_bot,r=3] run kill @s",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        7,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=1..},rxm=89] dh 51",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        8,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=1..5},rx=-89] dh 51",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        9,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={互传=1}] run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] dh 51",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        10,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run playsound random.chestclosed @a[tag=!pl_sm_bot,scores={菜单=0..},rxm=89]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        11,
+        0,
+        0
+      ],
+      "type": "chain",
+      "facing": "south",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=0..},rxm=89] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        11,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=7..}] 菜单 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        10,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run tp @a[tag=!pl_sm_bot,scores={菜单=1},rx=-89] -68 118 246",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        9,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run gamemode s @a[tag=!pl_sm_bot,scores={菜单=2},rx=-89]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        8,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run kill @a[tag=!pl_sm_bot,scores={菜单=3},rx=-89]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        7,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=4},rx=-89] at @s run spawnpoint @s ~ ~ ~",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        6,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=1..4},rx=-89] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        5,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={互传=1}] run title @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] actionbar 『§c互传通道占用中，请稍候§f』",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        4,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={互传=1}] run playsound random.anvil_land @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        3,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={互传=1}] run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        2,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] 互传 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        1,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] at @s run tellraw @a[tag=!pl_sm_bot] {\"rawtext\":[{\"text\":\"[§d播报§f] §f玩家§b➢\"},{\"selector\":\"@s\"},{\"text\":\"§a发起了玩家互传§f在60秒内打开雪球菜单同意传送即可让对方传送过来\"}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        0,
+        0,
+        1
+      ],
+      "type": "chain",
+      "facing": "south",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] run playsound random.orb @a[tag=!pl_sm_bot]",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        0,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] run scoreboard players set 时间 互传 60",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        1,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={菜单=5},rx=-89] 菜单 0",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        2,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run titleraw @a[tag=!pl_sm_bot,scores={互传=1}] actionbar {\"rawtext\":[{\"text\":\"您已发起玩家互传  §b剩余时长§f \"},{\"score\":{\"name\":\"时间\",\"objective\":\"互传\"}},{\"text\":\" §as\\n§f=========§a低头取消互传§f=========\"}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        3,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players reset @a[tag=!pl_sm_bot,scores={互传=0..},rxm=89] 互传",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        4,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute unless entity @a[tag=!pl_sm_bot,scores={互传=1}] run scoreboard players reset 时间 互传",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        5,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if score 时间 互传 matches ..0 run tellraw @a[tag=!pl_sm_bot] {\"rawtext\":[{\"text\":\"§f[§d播报§f] 时间已到，无人接受互传同意，已重置互传通道\"}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        6,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if score 时间 互传 matches ..0 run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=..0}] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        7,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if score 时间 互传 matches ..0 run scoreboard players reset * 互传",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        8,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute unless entity @a[tag=!pl_sm_bot,scores={互传=1}] run title @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] actionbar §l§c无人开启互传通道",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        9,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @p[tag=!pl_sm_bot,scores={菜单=6},rx=-89] run tp @a[tag=!pl_sm_bot,scores={互传=1}] ~ ~ ~",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        10,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if entity @a[tag=!pl_sm_bot,scores={互传=1}] at @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] as @a[tag=!pl_sm_bot,c=2] unless score @s 菜单 matches 1..5 run title @s actionbar §l║║║§a传送成功§f║║║",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        11,
+        0,
+        2
+      ],
+      "type": "chain",
+      "facing": "south",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] run scoreboard players reset * 互传",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        11,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute at @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=0}] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        10,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players reset @a[tag=!pl_sm_bot,scores={菜单=6},rx=-89] 菜单",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        9,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=3..8}] at @s unless score @s dh matches 5..6 run playsound block.bell.hit @s ~ ~ ~ 0.4 4 0.4",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        8,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=9..14}] at @s unless score @s dh matches 10..13 run playsound tile.piston.in @s ~ ~ ~ 1 0.5 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        7,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=20..30}] at @s run playsound random.shulkerboxopen @s ~ ~ ~ 0.9 3 0.9",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        6,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=33}] at @s run playsound item.trident.thunder @a[tag=!pl_sm_bot] ~ ~ ~ 0.6 6 0.6",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        5,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=1..,dh=1..10}] run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"%%9\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=1..2}]\"},{\"selector\":\"@s[scores={dh=1..3}]\"},{\"selector\":\"@s[scores={dh=1..5}]\"},{\"selector\":\"@s[scores={dh=1..6}]\"},{\"selector\":\"@s[scores={dh=1..7}]\"},{\"selector\":\"@s[scores={dh=1..8}]\"},{\"selector\":\"@s[scores={dh=1..9}]\"},{\"selector\":\"@s[scores={dh=1..10}]\"},{\"text\":\"\\n§7§l Ｓｈｏｒｔ Ｃｕｔ\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§fＳｈｏｒｔ Ｃｕｔ\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§0 ✕      ✕ §r\\n§f  Ｓｈｏｒｔ Ｃｕｔ\\n§0 ✕      ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§0 ✕        ✕ §r\\n§8  ✕      ✕ §r\\n§f   Ｓｈｏｒｔ Ｃｕｔ\\n§8  ✕      ✕ §r\\n§0 ✕        ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§0 ✕          ✕ §r\\n§8  ✕        ✕ §r\\n§8   ✕      ✕ §r\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n§8   ✕      ✕ §r\\n§8  ✕        ✕ §r\\n§0 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§8 ✕          ✕ §r\\n§8  ✕        ✕ §r\\n§7   ✕      ✕ §r\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n§7   ✕      ✕ §r\\n§8  ✕        ✕ §r\\n§8 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§8 ✕          ✕ §r\\n§7  ✕        ✕ §r\\n§8   ✕      ✕ §r\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n§8   ✕      ✕ §r\\n§7  ✕        ✕ §r\\n§8 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§7 ✕          ✕ §r\\n§8  ✕        ✕ §r\\n§0   ✕      ✕ §r\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n§0   ✕      ✕ §r\\n§8  ✕        ✕ §r\\n§7 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        4,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=1..,dh=11..18}] run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"%%9\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=11..11}]\"},{\"selector\":\"@s[scores={dh=11..12}]\"},{\"selector\":\"@s[scores={dh=11..13}]\"},{\"selector\":\"@s[scores={dh=11..14}]\"},{\"selector\":\"@s[scores={dh=11..15}]\"},{\"selector\":\"@s[scores={dh=11..16}]\"},{\"selector\":\"@s[scores={dh=11..17}]\"},{\"selector\":\"@s[scores={dh=11..18}]\"},{\"text\":\"\\n§7 ✕          ✕ §r\\n§0  ✕        ✕ §r\\n\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n\\n§0  ✕        ✕ §r\\n§7 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§8 ✕          ✕ §r\\n\\n\\n§b    Ｓｈｏｒｔ Ｃｕｔ\\n\\n\\n§8 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n§0 ✕          ✕ §r\\n\\n\\n§b     Ｓｈｏｒｔ Ｃｕｔ\\n\\n\\n§0 ✕          ✕ §r\\n\\n\\n\\n\\n\\n\\n\\n§r\"},{\"text\":\"\\n\\n\\n\\n§b     Ｓｈｏｒｔ Ｃｕｔ\\n\\n\\n\\n\\n\\n\"},{\"text\":\"\\n\\n\\n\\n§o§3▍§r§b     Ｓｈｏｒｔ Ｃｕ§3ｔ\\n\\n\\n\\n\\n\\n\"},{\"text\":\"\\n\\n\\n\\n§o§b▍§3▍§r§b     Ｓｈｏｒｔ Ｃ§3ｕｔ\\n\\n\\n\\n\\n\\n\"},{\"text\":\"\\n\\n\\n§o§3▍§r\\n§o§9▍§b▍▍§3▍§r§b    Ｓｈｏｒｔ§3 Ｃ§8ｕｔ\\n§o§3▍§r\\n\\n\\n\\n\\n\"},{\"text\":\"\\n\\n§o§3▍§r\\n§o§b▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r§b    Ｓｈｏ§3ｒｔ§8 Ｃ§0ｕｔ\\n§o§b▍§3▍§r\\n§o§3▍§r\\n\\n\\n\\n\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=14..}]\"},{\"text\":\"\\n\\n\\n\\n\\n§r              §r\"}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        3,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=1..,dh=19..26}] run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"%%9\\n\\n\\n\\n\\n§r              §r\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=19..19}]\"},{\"selector\":\"@s[scores={dh=19..20}]\"},{\"selector\":\"@s[scores={dh=19..21}]\"},{\"selector\":\"@s[scores={dh=19..22}]\"},{\"selector\":\"@s[scores={dh=19..23}]\"},{\"selector\":\"@s[scores={dh=19..24}]\"},{\"selector\":\"@s[scores={dh=19..25}]\"},{\"selector\":\"@s[scores={dh=19..26}]\"},{\"text\":\"\\n§o§3▍§r\\n§o§b▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r§b    Ｓ§3ｈｏ§8ｒｔ§0 Ｃ\\n§o§9▍§b▍▍§3▍§r\\n§o§b▍§3▍§r\\n§o§3▍§r\\n\\n\\n\"},{\"text\":\"\\n§o§b▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r    §8Ｓｈ§0ｏｒ\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§b▍§3▍§r\\n§o§3▍§r\\n\\n\"},{\"text\":\"\\n§o§9▍§b▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r    §0 Ｓ\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§b▍§3▍§r\\n§o§3▍§r\\n\"},{\"text\":\"\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§b▍§3▍§r\\n§o§3▍§r\"},{\"text\":\"\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§0┆§1〕§r§1▶§o▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\\n§o§b▍§3▍§r\"},{\"text\":\"\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§0┆§1〕§r§1▶ ━§o▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\\n§o§9▍§b▍▍§3▍§r\"},{\"text\":\"\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§1 ▏▏§o▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - §o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍§3▍§r\"},{\"text\":\"\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1 ▏▏▏ §r§8▍│ - §o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◇ -   §o§b│§8▋§o§1▍▍§r\\n§7  ▍│ -§o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍§b▍▍▍▍▍▍§3▍§r\"}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        2,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=1..,dh=27..34}] run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"%%9\\n\\n\\n\\n\\n§r              §r\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=27..27}]\"},{\"selector\":\"@s[scores={dh=27..28}]\"},{\"selector\":\"@s[scores={dh=27..29}]\"},{\"selector\":\"@s[scores={dh=27..30}]\"},{\"selector\":\"@s[scores={dh=27..31}]\"},{\"selector\":\"@s[scores={dh=27..32}]\"},{\"selector\":\"@s[scores={dh=27..33}]\"},{\"selector\":\"@s[scores={dh=27..34}]\"},{\"text\":\"\\n§o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§1 ▏▏▏ §r§8▍│ - ◇ -§o§1  ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◇ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◇ - §o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§7  ▍│ - §o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§9▍▍▍§b▍▍▍▍▍▍▍▍§3▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o§1 ▏▏▏ §r§8▍│ - ◇ -    §1￣§o◥│§3▋▋§1│▍▍§r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◈ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◇ -    §o§b│§8▋▋§b│ §1▍▍§r\\n§7  ▍│ - ◇ - §o§1 ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§8 ▍│ - ◇§o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§8 ▍§o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\\n§o§1▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§3▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ ‖ ‖ §1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▍▍§r\\n§o§1 ▏▏▏ §r§8▍│ - ◈ -    §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◈ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◈ -    §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◇ -    §o§3│§8▋▋§3│§1  ▍▍§r\\n§8 ▍│ - ◇ -§o§1  ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§8 ▍│ - ◇ §o§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o§9▏▏▏▏§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\\n§o§1▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍§b▍▍§3▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ ‖ ‖ ‖  ‖ ─ §9─ │‖§1▍▍§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│ - ◈ -    §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◆ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◈ -    §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◈ -    §o§3│§8▋▋§3│§r\\n§8 ▍│ - ◇ -    §o§3│§8▋▋§3│§1  ▍▍§r\\n§8 ▍│ - ◇ - §o§1  ▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\\n§o §1‖│▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍▍▍§3▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ ‖ ‖ ‖  ‖ ─ §9─ │‖§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│ - ◆ -    §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◆ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◆ -    §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◈ -    §o§3│§8▋▋§3│§r\\n§8 ▍│ - ◈ -    §o§3│§8▋▋§3│§r\\n§8 ▍│ - ◇ -    §o§9│§3▋▋§9│  ▏▏▏§1▍▍§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\\n§o §1‖│§b‖ §1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍▍▍▍▍▍▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─     ─ §9─ │‖§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│ - ◆ -    §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§f - ◆ -   §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◆ -    §o§b│§8▋▋§b│§r\\n§7  ▍│ - ◆ -    §o§3│§8▋▋§3│§r\\n§8 ▍│ - ◈ -    §o§3│§8▋▋§3│§r\\n§8 ▍│ - ◈ -    §o§9│§3▋▋§9│  ▏▏▏§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§1▍▍§r\\n§o §1‖│§b‖   ‖ §1▍▍▍▍▍▍§9▍▍▍▍§b▍▍▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§9│§3▋▋§9│  ▏▏▏§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o §1‖│§b     ─     §1▍▍§r\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§9│§3▋▋§9│  ▏▏▏§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏§r\"}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        1,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "west",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=1,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│接受传送   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"快捷回城  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"生存模式   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"放弃探索   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"设重生点   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"发起传送   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        0,
+        0,
+        3
+      ],
+      "type": "chain",
+      "facing": "south",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=2,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│快捷回城   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"生存模式  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"放弃探索   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"设重生点   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"发起传送   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"接受传送   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        0,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=3,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│生存模式   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"放弃探索  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"设重生点   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"发起传送   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"接受传送   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"快捷回城   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        1,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=4,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│放弃探索   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"设重生点  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"发起传送   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"接受传送   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"快捷回城   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"生存模式   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        2,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=5,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│设重生点   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"发起传送  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"接受传送   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"快捷回城   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"生存模式   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"放弃探索   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        3,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={菜单=6,dh=35..},rxm=-89] at @s run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§1\\n§o ▏▏▏%%1▏§1%%2▏▏§1%%3▏▏▏§1%%4▏▏▏▏§1%%5▏▏▏▏▏▏▏§1%%6▏▏▏▏▏▏▏▏▏§1%%7▏▏▏▏▏▏▏▏▏▏▏§1%%8▏▏▏▏▏▏▏▏▏\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=35}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=36}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=37}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=38}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=39}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=40}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§9\"}]}}]}},{\"translate\":\"\\n§1 ▏▏▏ §r§8▍│发起传送   §1￣§o◥│%%3▋▋§1│\\n§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b \",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..2}]\"},{\"selector\":\"@s[scores={dh1=0..4}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§f\"}]}},{\"translate\":\"接受传送  §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"快捷回城   §o§b│%%2▋▋§b│§r\\n  §7▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"}]}},{\"translate\":\"生存模式   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"放弃探索   §o§3│%%3▋▋§3│§r\\n §8▍│\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..6}]\"},{\"text\":\"§8\"},{\"text\":\"§b\"},{\"text\":\"§3\"}]}},{\"translate\":\"设重生点   §o§9│%%4▋▋§9│  ▏▏▏\\n\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh1=0..1}]\"},{\"selector\":\"@s[scores={dh1=0..5}]\"},{\"selector\":\"@s[scores={dh1=0..7}]\"},{\"text\":\"§3\"},{\"text\":\"§b\"},{\"text\":\"§3\"},{\"text\":\"§9\"}]}},{\"translate\":\"%%1▏▏▏▏§9%%2▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§9%%3▏▏▏▏▏▏▏▏▏§9%%4▏▏▏▏▏▏▏§9%%5▏▏▏▏§9%%6▏▏▏§9%%7▏▏§9%%8▏§9▏▏▏\\n §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏\\n\\n\\n\\n\\n              §r\",\"with\":{\"rawtext\":[{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=41}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=42}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=43}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=44}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=45}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=46}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=47}]\"},{\"text\":\"§1\"}]}},{\"translate\":\"%%2\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=48}]\"},{\"text\":\"§1\"}]}}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        4,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=51..79}] run titleraw @s actionbar {\"rawtext\":[{\"translate\":\"%%9\",\"with\":{\"rawtext\":[{\"selector\":\"@s[scores={dh=51}]\"},{\"selector\":\"@s[scores={dh=51..52}]\"},{\"selector\":\"@s[scores={dh=51..52}]\"},{\"selector\":\"@s[scores={dh=51..53}]\"},{\"selector\":\"@s[scores={dh=51..54}]\"},{\"selector\":\"@s[scores={dh=51..55}]\"},{\"selector\":\"@s[scores={dh=51..56}]\"},{\"selector\":\"@s[scores={dh=51..57}]\"},{\"text\":\"\\n §1§o ▏▏▏§9│ ─ §b─ Run Well ─ §9─ │‖§r\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§9│§3▋▋§9│  ▏▏▏§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o §1‖│§b抬头确认 ─ 低头取消§1│§9▏▏▏§r\\n\\n\\n\\n\\n§r              §r\"},{\"text\":\"\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§9│§3▋▋§9│  ▏▏▏§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n\\n\\n\\n\\n§r              §r\"},{\"text\":\"\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§8 ▍│       §o§3│§8▋▋§3│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n\\n\\n\\n§r              §r\"},{\"text\":\"\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n§o§1 ▏▏▏ §r§8▍│       §1￣§o◥│§3▋▋§1│ §r\\n§o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§7  ▍│       §o§3│§8▋▋§3│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n\\n\\n§r              §r\"},{\"text\":\"\\n§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n §o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b       §o§b│§3▋▋§b│§r\\n§7  ▍│       §o§b│§8▋▋§b│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n\\n§r              §r\"},{\"text\":\"§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n §o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b 执行完毕  §o§b│§3▋▋§b│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\"},{\"text\":\"§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n §o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b 执行完毕  §o§b│§3▋▋§b│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\"},{\"text\":\"§o§1 ▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\\n §o§0┆§1〕§r§1▶ ━§9〗｜§b｜§l｜§r§b 执行完毕  §o§b│§3▋▋§b│§r\\n§o§9▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏▏§r\"}]}}]}",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        5,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players add @a[tag=!pl_sm_bot,scores={dh=35..,dh1=0..8}] dh1 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        6,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute as @a[tag=!pl_sm_bot,scores={dh=1..79}] unless score @s dh matches 50 run scoreboard players add @s dh 1",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        7,
+        0,
+        4
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run scoreboard players set @a[tag=!pl_sm_bot,scores={dh=50}] dh 35",
+      "name": "新版UI 附加指令",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    },
+    {
+      "at": [
+        0,
+        0,
+        10
+      ],
+      "type": "repeat",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if score 时间 互传 matches 1.. run scoreboard players remove 时间 互传 1",
+      "name": "新版UI 互传计时",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 20
+    },
+    {
+      "at": [
+        1,
+        0,
+        10
+      ],
+      "type": "chain",
+      "facing": "east",
+      "command": "execute if score plsm_enabled plsm_state matches 1 run execute if score 时间 互传 matches 1.. run playsound random.orb @a[tag=!pl_sm_bot,scores={互传=1}]",
+      "name": "新版UI 互传计时",
+      "conditional": false,
+      "auto": true,
+      "first_tick": false,
+      "track_output": true,
+      "delay": 0
+    }
+  ]
+}

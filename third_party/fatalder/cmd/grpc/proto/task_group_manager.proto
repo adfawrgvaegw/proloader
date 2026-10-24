@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package fatalder.proto.task_group_manager;
+
+import "response.proto";
+import "request.proto";
+import "tasks.proto";
+import "server_config.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/task_group_manager";
+
+message RunningTaskGroup {
+  string name = 1;
+  string uuid = 2;
+  repeated tasks.Task tasks = 3;
+  repeated tasks.TaskEvent events = 4;
+};
+
+message ListRunningTaskGroupResponse {
+  repeated RunningTaskGroup groups = 1;
+  string error = 2;
+}
+
+message CreateTaskGroupRequest {
+  string name = 1;
+  repeated tasks.Task tasks = 2;
+  server_config.ServerConfig server = 3;
+}
+
+message CreateTaskGroupResponse {
+  RunningTaskGroup group = 1;
+  string error = 2;
+}
+
+message GetTaskGroupResponse {
+  RunningTaskGroup group = 1;
+  string error = 2;
+}
+
+service TaskGroupManagerService {
+  rpc PushTaskEvent(request.EmptyRequest) returns (stream tasks.TaskEvent);
+  rpc ListRunningTaskGroup(request.EmptyRequest) returns (ListRunningTaskGroupResponse);
+  rpc CreateTaskGroup(CreateTaskGroupRequest) returns (CreateTaskGroupResponse);
+  rpc RunTaskGroup(request.StringRequest) returns (response.BoolResponse);
+  rpc GetTaskGroup(request.StringRequest) returns (GetTaskGroupResponse);
+  rpc PauseTaskGroup(request.StringRequest) returns (response.BoolResponse);
+  rpc ResumeTaskGroup(request.StringRequest) returns (response.BoolResponse);
+  rpc StopTaskGroup(request.StringRequest) returns (response.BoolResponse); // stop 之后就删除 TaskGroup
+};

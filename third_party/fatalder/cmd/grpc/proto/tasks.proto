@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+package fatalder.proto.tasks;
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/define/tasks";
+
+enum TaskType {
+  TASK_TYPE_UNSPECIFIED = 0;
+  TASK_TYPE_COMMAND = 1;
+  TASK_TYPE_SLEEP = 2;
+  TASK_TYPE_CHAT = 3;
+  TASK_TYPE_MOVE = 4;
+  TASK_TYPE_BUILD = 5;
+  TASK_TYPE_EXPORT = 6;
+}
+
+message BlockPos {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
+}
+
+message ChunkPos {
+  int32 x = 1;
+  int32 z = 2;
+}
+
+message SubChunkPos {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
+}
+
+message StructureSize {
+  int32 width = 1;
+  int32 height = 2;
+  int32 length = 3;
+}
+
+message CommandTaskConfig {
+  string command = 1;
+  string identity = 2;
+}
+
+message SleepTaskConfig {
+  int32 duration = 1;
+}
+
+message ChatTaskConfig {
+  string content = 1;
+}
+
+message MoveTaskConfig {
+  BlockPos pos = 1;
+}
+
+message BuildTaskConfig {
+  string file_path = 1;
+  BlockPos start_pos = 2;
+  string dimension_name = 3;
+  int32 speed = 4;
+  int32 chunk_group_side = 5;
+  bool auto_clean_block = 6;
+  bool auto_clean_item = 7;
+  bool auto_disable_command = 8;
+  bool enable_delta_mode = 9;
+  bool ignore_command_block = 10;
+  bool ignore_other_nbt_block = 11;
+  bool auto_upgrade_command = 12;
+  bool wait_chunk_load = 13;
+  bool convert_to_mcworld = 14;
+  BlockPos console_world_pos = 15;
+  bool show_nbt_progress = 16;
+  int32 verify_after_chunk = 17;
+  int32 verify_chunk_level = 18;
+  bool auto_enter_fix_mode = 19;
+  bool enter_fix_mode_directly = 20;
+  int32 progress = 21;
+}
+
+message ExportTaskConfig {
+  string file_path = 1;
+  string file_type = 2;
+  string dimension_name = 3;
+  BlockPos start_pos = 4;
+  BlockPos end_pos = 5;
+}
+
+message Task {
+  TaskType type = 1;
+  oneof config {
+    CommandTaskConfig command = 2;
+    SleepTaskConfig sleep = 3;
+    ChatTaskConfig chat = 4;
+    MoveTaskConfig move = 5;
+    BuildTaskConfig build = 6;
+    ExportTaskConfig export = 7;
+  }
+}
+
+message BlockCountInfo {
+  int32 block_count = 1;
+  int32 command_block_count = 2;
+  int32 other_nbt_count = 3;
+}
+
+message BuildStructureInfo {
+  string name = 1;
+  StructureSize size = 2;
+}
+
+message BuildChunkEvent {
+  ChunkPos chunk_pos = 1;
+  int32 completed_chunks = 2;
+  int32 total_chunks = 3;
+}
+
+message BuildChunkFixEvent {
+  ChunkPos chunk_pos = 1;
+  string player_name = 2;
+}
+
+message BuildChunkFixExceededEvent {
+  ChunkPos chunk_pos = 1;
+  int32 attempts = 2;
+}
+
+message BuildNBTBlockEvent {
+  BlockPos block_pos = 1;
+  uint32 block_runtime_id = 2;
+  string nbt_json = 3;
+}
+
+message BuildChargeCostEvent {
+  BlockCountInfo block_info = 1;
+  int32 deducted = 2;
+  string balance = 3;
+}
+
+message BuildChargeCostDuplicateEvent {
+  BlockCountInfo block_info = 1;
+}
+
+message BuildChargeCostFailedEvent {
+  BlockCountInfo block_info = 1;
+  string error = 2;
+}
+
+message BuildConvertStartEvent {
+  string src_path = 1;
+  string dest_path = 2;
+}
+
+message BuildConvertExistsEvent {
+  string path = 1;
+}
+
+message BuildConvertSuccessEvent {
+  string path = 1;
+}
+
+message BuildConvertProgressInitEvent {
+  int32 total = 1;
+}
+
+message BuildConvertProgressEvent {
+  int32 completed = 1;
+  int32 total = 2;
+}
+
+message ExportStartEvent {
+  StructureSize size = 1;
+}
+
+message ExportChunkEvent {
+  ChunkPos chunk_pos = 1;
+  int32 completed_chunks = 2;
+  int32 total_chunks = 3;
+}
+
+message ExportSubChunkFailedEvent {
+  SubChunkPos sub_chunk_pos = 1;
+  string error = 2;
+}
+
+message ExportChunkFailedEvent {
+  ChunkPos chunk_pos = 1;
+  string error = 2;
+}
+
+message ExportFinishedEvent {
+  string path = 1;
+}
+
+enum TaskEventType {
+  // 通用
+  TASK_EVENT_UNKNOWN = 0;
+  TASK_START = 1;   // 任务启动
+  TASK_PAUSE = 2;   // 任务暂停
+  TASK_RESUME = 3;  // 任务恢复
+  TASK_SUCCESS = 4; // 任务成功
+  TASK_FAILED = 5;  // 任务失败
+  TASK_STOP = 6;    // 任务停止
+
+  // 构建任务
+  TASK_BUILD_START = 7;
+  TASK_BUILD_GOT_TYPE = 8;
+  TASK_BUILD_PARSING = 9;
+  TASK_BUILD_PARSED = 10;
+  TASK_BUILD_START_BUILDING = 11;
+  TASK_BUILD_EVERY_CHUNK_BUILT = 12;
+  TASK_BUILD_EVERY_CHUNK_AUTO_FIX = 13;
+  TASK_BUILD_CHUNK_FIX_EXCEEDED_LIMIT = 14;
+  TASK_BUILD_EVERY_NBT_BLOCK_BUILDING = 15;
+  TASK_BUILD_CHARGE_COST_SUCCESS = 16;
+  TASK_BUILD_CHARGE_COST_DUPLICATE = 17;
+  TASK_BUILD_CHARGE_COST_FAILED = 18;
+  TASK_BUILD_USER_CENTER_NOT_INIT = 19;
+  TASK_BUILD_ENTER_FIX_MODE = 20;
+  TASK_BUILD_EXIT_FIX_MODE = 21;
+  TASK_BUILD_EVERY_CHUNK_FIX_START = 22;
+  TASK_BUILD_EVERY_CHUNK_FIX_END = 23;
+  TASK_BUILD_CONVERT_START = 24;
+  TASK_BUILD_CONVERT_EXISTS = 25;
+  TASK_BUILD_CONVERT_SUCCESS = 26;
+  TASK_BUILD_CONVERT_PROGRESS_INIT = 27;
+  TASK_BUILD_CONVERT_PROGRESS = 28;
+
+  // 导出任务
+  TASK_EXPORT_START = 29;
+  TASK_EXPORT_EVERY_CHUNK_EXPORTED = 30;
+  TASK_EXPORT_EVERY_SUB_CHUNK_SAVE_FAILED = 31;
+  TASK_EXPORT_EVERY_SUB_CHUNK_DECODE_NBT_FAILED = 32;
+  TASK_EXPORT_EVERY_CHUNK_NBT_SAVE_FAILED = 33;
+  TASK_EXPORT_FINISHED = 34;
+}
+
+message TaskEvent {
+  string uuid = 1;
+  TaskEventType type = 2;
+  string message = 3;
+  oneof event {
+    BuildStructureInfo build_structure = 4;
+    BuildChunkEvent build_chunk = 5;
+    BuildChunkFixEvent build_chunk_fix = 6;
+    BuildChunkFixExceededEvent build_chunk_fix_exceeded = 7;
+    BuildNBTBlockEvent build_nbt_block = 8;
+    BuildChargeCostEvent build_charge_cost = 9;
+    BuildChargeCostDuplicateEvent build_charge_duplicate = 10;
+    BuildChargeCostFailedEvent build_charge_failed = 11;
+    BuildConvertStartEvent build_convert_start = 12;
+    BuildConvertExistsEvent build_convert_exists = 13;
+    BuildConvertSuccessEvent build_convert_success = 14;
+    BuildConvertProgressInitEvent build_convert_progress_init = 15;
+    BuildConvertProgressEvent build_convert_progress = 16;
+    ExportStartEvent export_start = 17;
+    ExportChunkEvent export_chunk = 18;
+    ExportSubChunkFailedEvent export_sub_chunk_failed = 19;
+    ExportChunkFailedEvent export_chunk_failed = 20;
+    ExportFinishedEvent export_finished = 21;
+  }
+}

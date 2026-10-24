@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package fatalder.proto.response;
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/response";
+
+message EmptyResponse {}
+
+message StringResponse {
+    string result = 1;
+    string error = 2;
+}
+
+message BoolResponse {
+    bool result = 1;
+    string error = 2;
+}
+
+message Int64Response {
+    int64 result = 1;
+    string error = 2;
+}

@@ -1,0 +1,2 @@
+protoc -I ./cmd/grpc/proto --go_out=. --go_opt=module=github.com/Yeah114/Fatalder --go-grpc_out=. --go-grpc_opt=module=github.com/Yeah114/Fatalder ./cmd/grpc/proto/*.proto
+protoc -I ./cmd/grpc/proto --dart_out=grpc:../Fatalder-FFF/lib/pb ./cmd/grpc/proto/*.proto

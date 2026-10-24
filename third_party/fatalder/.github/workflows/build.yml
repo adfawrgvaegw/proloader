@@ -1,0 +1,801 @@
+name: Build on Push
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.head_commit.message, 'Release')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Initialize release repository if empty
+        if: github.event_name == 'push'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          git clone https://${GH_PAT}@github.com/Yeah114/Fatalder-Release.git release-repo
+          cd release-repo
+          if git rev-parse HEAD >/dev/null 2>&1; then
+            echo "Release repo already initialized"
+          else
+            echo "Initializing empty release repo"
+            git checkout -b main
+            echo "# Fatalder Release" > README.md
+            git add README.md
+            git -c user.name="fatalder-bot" -c user.email="bot@users.noreply.github.com" commit -m "chore: initial commit"
+            git push -u origin main
+          fi
+
+      - name: Create GitHub Release in Yeah114/Fatalder-Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          if gh release view "$tag" --repo Yeah114/Fatalder-Release >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping create"
+          else
+            commit_msg=$(git log -1 --pretty=%B)
+            {
+              printf 'Automated release from commit %s on ref %s\n' "$GITHUB_SHA" "$GITHUB_REF"
+              echo
+              echo "Commit message:"
+              printf '%s\n' "$commit_msg"
+            } > release_notes.txt
+            gh release create "$tag" \
+              --repo Yeah114/Fatalder-Release \
+              --title "Fatalder CLI $tag" \
+              --notes-file release_notes.txt
+          fi
+
+  linux-amd64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build Linux amd64
+        run: |
+          GOOS=linux GOARCH=amd64 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_linux_amd64 \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: UPX compress artifact
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
+          files: build/Fatalder-cli_linux_amd64
+          args: -fq
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_linux_amd64 | awk '{print $1}' > build/Fatalder-cli_linux_amd64.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_linux_amd64 --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_linux_amd64.sha --repo Yeah114/Fatalder-Release --clobber
+
+  linux-arm64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build Linux arm64
+        run: |
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_linux_arm64 \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: UPX compress artifact
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
+          files: build/Fatalder-cli_linux_arm64
+          args: -fq
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_linux_arm64 | awk '{print $1}' > build/Fatalder-cli_linux_arm64.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_linux_arm64 --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_linux_arm64.sha --repo Yeah114/Fatalder-Release --clobber
+
+  android-arm64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Setup Android NDK
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build Android arm64
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          CC="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android34-clang"
+          echo Using ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
+          GOOS=android GOARCH=arm64 CGO_ENABLED=1 CC="$CC" \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_android_arm64 \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: UPX compress artifact
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
+          files: build/Fatalder-cli_android_arm64
+          args: -fq
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_android_arm64 | awk '{print $1}' > build/Fatalder-cli_android_arm64.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_android_arm64 --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_android_arm64.sha --repo Yeah114/Fatalder-Release --clobber
+
+  darwin-amd64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build macOS amd64
+        run: |
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_darwin_amd64 \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_darwin_amd64 | awk '{print $1}' > build/Fatalder-cli_darwin_amd64.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_darwin_amd64 --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_darwin_amd64.sha --repo Yeah114/Fatalder-Release --clobber
+
+  darwin-arm64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build macOS arm64
+        run: |
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_darwin_arm64 \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_darwin_arm64 | awk '{print $1}' > build/Fatalder-cli_darwin_arm64.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_darwin_arm64 --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_darwin_arm64.sha --repo Yeah114/Fatalder-Release --clobber
+
+  windows-amd64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build Windows amd64
+        run: |
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_windows_amd64.exe \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: UPX compress artifact
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
+          files: build/Fatalder-cli_windows_amd64.exe
+          args: -fq
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_windows_amd64.exe | awk '{print $1}' > build/Fatalder-cli_windows_amd64.exe.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_windows_amd64.exe --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_windows_amd64.exe.sha --repo Yeah114/Fatalder-Release --clobber
+
+  windows-arm64:
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Install garble
+        run: go install mvdan.cc/garble@latest
+
+      - name: Prepare build directory
+        run: mkdir -p build
+
+      - name: Configure GOPRIVATE and fetch modules
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          go env -w GOPRIVATE=github.com/Yeah114/*
+          mkdir -p modules
+          echo "Checking local replace modules..."
+          if [ ! -f modules/WaterStructure/go.mod ]; then
+            echo "Cloning Yeah114/WaterStructure into modules/WaterStructure"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/WaterStructure.git modules/WaterStructure
+          else
+            echo "Found modules/WaterStructure"
+          fi
+          if [ ! -f modules/blocks/go.mod ]; then
+            echo "Cloning Yeah114/blocks into modules/blocks"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/blocks.git modules/blocks
+          else
+            echo "Found modules/blocks"
+          fi
+          if [ ! -f modules/g79client/go.mod ]; then
+            echo "Cloning Yeah114/g79client into modules/g79client"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 https://${GH_PAT}@github.com/Yeah114/g79client.git modules/g79client
+          else
+            echo "Found modules/g79client"
+          fi
+          if [ ! -f modules/FunShuttler/go.mod ]; then
+            echo "Cloning Yeah114/FunShuttler into modules/FunShuttler"
+            if [ -z "${GH_PAT}" ]; then
+              echo "Error: GH_PAT secret is not set. Please add a Personal Access Token with repo scope to repository secrets as GH_PAT."
+              exit 1
+            fi
+            git clone --depth 1 --branch main https://${GH_PAT}@github.com/Yeah114/FunShuttler.git modules/FunShuttler
+          else
+            echo "Found modules/FunShuttler"
+          fi
+
+      - name: Generate constants
+        run: go generate ./constants
+
+      - name: Build Windows arm64
+        run: |
+          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 \
+          garble -literals -tiny -seed=random build \
+            -ldflags "-s -w -checklinkname=0" \
+            -o build/Fatalder-cli_windows_arm64.exe \
+            -v github.com/Yeah114/Fatalder/cmd/cli
+
+      - name: Compute SHA512
+        run: |
+          sha512sum build/Fatalder-cli_windows_arm64.exe | awk '{print $1}' > build/Fatalder-cli_windows_arm64.exe.sha
+
+      - name: Upload asset to release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          tag="commit-${GITHUB_SHA}"
+          gh release upload "$tag" build/Fatalder-cli_windows_arm64.exe --repo Yeah114/Fatalder-Release --clobber
+          gh release upload "$tag" build/Fatalder-cli_windows_arm64.exe.sha --repo Yeah114/Fatalder-Release --clobber

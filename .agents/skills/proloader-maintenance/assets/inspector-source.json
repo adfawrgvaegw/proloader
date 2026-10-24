@@ -1,0 +1,87 @@
+{
+  "repo": "https://github.com/yeah-god/unmcpk",
+  "commit": "0cda8e50b6656481abd166ef9e8d275ee8167bc2",
+  "archive_sha256": "dfdf23de227565925d98b45bface25f047a75113744dbe2f0876a87c796a9048",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+    },
+    {
+      "path": "go.mod",
+      "sha256": "fc531cb94abab9791c77c1efd113d2bc7651416d07d1c52a3f271a924ad75890"
+    },
+    {
+      "path": "go.sum",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "mcpk/directory.go",
+      "sha256": "4ff94679e7b739d812a05375ed8bc7896cb7972eb7f6e7f54f3af78f2bf77a2f"
+    },
+    {
+      "path": "mcpk/filesystem.go",
+      "sha256": "ea28f94cd87e14361553e563ce70d802a0d02dca6fa6a1efe32a4c64d54e89f5"
+    },
+    {
+      "path": "mcpk/hash.go",
+      "sha256": "e312611458b1a7a42166cded0e8da3f5b06da54b75d6b33f5d485a97cae23bdc"
+    },
+    {
+      "path": "mcpk/open.go",
+      "sha256": "d0fb034af9aec12db9f6133917fd785b126205af87508427fea5de0032f70c17"
+    },
+    {
+      "path": "mcpk/rotor.go",
+      "sha256": "9e2d41ab0a9bd41a9e89d275662bd3711a9982044be0fe6ef33964933f5ec198"
+    },
+    {
+      "path": "mcpk/unpack.go",
+      "sha256": "7f2cfdf5034a9ab631133e1ae1ffeab6305005d7da84b8e482669f9b213ddfd8"
+    },
+    {
+      "path": "pymarshal/convert.go",
+      "sha256": "a2c63b1d7e5aae1b6177a20d70869a94881dcd126139e649b9adad0844312565"
+    },
+    {
+      "path": "pymarshal/encrypt.go",
+      "sha256": "a001e062f0cbfcc524747fbb38318109105fbf389f885596b8cd9ad0be4bf979"
+    },
+    {
+      "path": "pymarshal/encrypt_test.go",
+      "sha256": "54796863b48bfdf99c3032c87ec35b67ea28f4518cb08774aa209d92caea5332"
+    },
+    {
+      "path": "pymarshal/netease_code_0.go",
+      "sha256": "acfc152d4303ca1874ab7814878dab373dd020b3b37d02e0e0dc547052fea556"
+    },
+    {
+      "path": "pymarshal/netease_code_1.go",
+      "sha256": "c37084cfdcadeebb27af8a2419300df28616b8073b34a75a3ffc613d27988a20"
+    },
+    {
+      "path": "pymarshal/netease_code_2.go",
+      "sha256": "317a1fa58150ac2778a4883ed48d16597bb5ccc0105c19aeac19d036f6e17822"
+    },
+    {
+      "path": "pymarshal/netease_opcode.go",
+      "sha256": "5241f21e9cdbaf5ce63494c4fc2512d1680d86d3c3495c89ae49dd364b0c53b5"
+    },
+    {
+      "path": "pymarshal/netease_types.go",
+      "sha256": "fe818a2b636641c6c1b0490737d129839ca2b07171eca6137f13701a0fe4a653"
+    },
+    {
+      "path": "pymarshal/opcode.go",
+      "sha256": "d4bb5730571297e1a4d049a18d9fe126b35aae377559dbf8237e877351b156dc"
+    },
+    {
+      "path": "pymarshal/types.go",
+      "sha256": "c20a2e4047132bd771bca2736bd732dfde1f0b6bc2618c2a7daa877cf14c92ba"
+    },
+    {
+      "path": "pymarshal/utility.go",
+      "sha256": "fe8c3e018bedf6e9cbeb0ce901f3b8f09f756a49f5b1a779f076471925d06b00"
+    }
+  ]
+}

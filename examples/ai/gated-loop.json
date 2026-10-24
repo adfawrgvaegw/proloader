@@ -1,0 +1,25 @@
+{
+  "format": "proloader-ai-v1",
+  "edition": "bedrock",
+  "dimension": "overworld",
+  "origin": [
+    12004,
+    284,
+    12014
+  ],
+  "blocks": [
+    {
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "type": "repeat",
+      "facing": "east",
+      "auto": true,
+      "delay": 20,
+      "command": "execute if score enabled plai_test matches 1 run scoreboard players add loop plai_test 1",
+      "name": "AI gated loop"
+    }
+  ]
+}

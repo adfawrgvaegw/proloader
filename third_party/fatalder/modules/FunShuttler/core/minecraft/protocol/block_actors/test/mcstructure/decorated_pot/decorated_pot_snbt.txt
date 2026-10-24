@@ -1,0 +1,88 @@
+{
+  format_version: 1,
+  size: [
+    1,
+    1,
+    1
+  ],
+  structure: {
+    block_indices: [
+      [
+        0
+      ],
+      [
+        -1
+      ]
+    ],
+    entities: [],
+    palette: {
+      default: {
+        block_palette: [
+          {
+            name: "minecraft:decorated_pot",
+            states: {
+              direction: 3
+            },
+            val: 3s,
+            version: 18153475
+          }
+        ],
+        block_position_data: {
+          0: {
+            block_entity_data: {
+              CustomName: ":(",
+              IsIgnoreShuffle: 0b,
+              IsOpened: 1b,
+              animation: 0b,
+              id: "DecoratedPot",
+              isMovable: 1b,
+              item: {
+                Block: {
+                  name: "minecraft:decorated_pot",
+                  states: {
+                    direction: 0
+                  },
+                  val: 0s,
+                  version: 18153475
+                },
+                Count: 1b,
+                Damage: 0s,
+                Name: "minecraft:decorated_pot",
+                WasPickedUp: 0b,
+                tag: {
+                  CustomName: ":(",
+                  IsIgnoreShuffle: 0b,
+                  IsOpened: 1b,
+                  RepairCost: 0,
+                  display: {
+                    Name: ":("
+                  },
+                  sherds: [
+                    "minecraft:heart_pottery_sherd",
+                    "minecraft:heart_pottery_sherd",
+                    "minecraft:heart_pottery_sherd",
+                    "minecraft:heart_pottery_sherd"
+                  ]
+                }
+              },
+              sherds: [
+                "minecraft:heart_pottery_sherd",
+                "minecraft:heart_pottery_sherd",
+                "minecraft:heart_pottery_sherd",
+                "minecraft:heart_pottery_sherd"
+              ],
+              x: -31,
+              y: 65,
+              z: 10
+            }
+          }
+        }
+      }
+    }
+  },
+  structure_world_origin: [
+    -31,
+    65,
+    10
+  ]
+}

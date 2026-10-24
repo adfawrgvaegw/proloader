@@ -1,0 +1,6 @@
+github.com/database64128/chacha8-go v0.0.0-20250815115417-e0f2726d8bd0 h1:+PwYZOkqu5Yxuh8MBgtSaPq5H/5jwjRx4kCRdn5Ko8E=
+github.com/database64128/chacha8-go v0.0.0-20250815115417-e0f2726d8bd0/go.mod h1:EZ6hFXvvLdDO+4F1KjTCRNCiiC7yn5mupn17VYjsiWA=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+golang.org/x/sys v0.35.0 h1:vz1N37gP5bs89s7He8XuIYXpyY0+QlsKmzipCbUtyxI=
+golang.org/x/sys v0.35.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=

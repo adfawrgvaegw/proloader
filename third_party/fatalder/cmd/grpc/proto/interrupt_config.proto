@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package fatalder.proto.interrupt_config;
+
+import "request.proto";
+import "response.proto";
+import "server_config.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/define/interrupt_config";
+
+message InterruptConfig {
+  string name = 1;
+  string uuid = 2;
+  server_config.ServerConfig server = 3;
+  repeated string data = 4;
+}
+
+message InterruptConfigEntry {
+  string name = 1;
+  InterruptConfig config = 2;
+}
+
+message ListInterruptConfigsResponse {
+  repeated InterruptConfigEntry configs = 1;
+  string error = 2;
+}
+
+message GetInterruptConfigRequest {
+  string name = 1;
+}
+
+message GetInterruptConfigResponse {
+  InterruptConfig config = 1;
+  string error = 2;
+}
+
+message SaveInterruptConfigRequest {
+  string name = 1;
+  InterruptConfig config = 2;
+}
+
+message DeleteInterruptConfigRequest {
+  string name = 1;
+}
+
+service InterruptConfigService {
+  rpc ListInterruptConfigs(request.EmptyRequest) returns (ListInterruptConfigsResponse);
+  rpc GetInterruptConfig(GetInterruptConfigRequest) returns (GetInterruptConfigResponse);
+  rpc SaveInterruptConfig(SaveInterruptConfigRequest) returns (response.StringResponse);
+  rpc DeleteInterruptConfig(DeleteInterruptConfigRequest) returns (response.StringResponse);
+}

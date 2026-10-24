@@ -1,0 +1,4 @@
+interface:
+  display_name: "Proloader 版本维护"
+  short_description: "AI读取后自动检查更新、适配补丁并完成测试与连接验收"
+  default_prompt: "读取 $proloader-maintenance 并由你完成版本维护：自行调用内部脚本，仅在需要时加载差异源码，不要求用户执行command。"

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package fatalder.proto.tasks_config;
+
+import "request.proto";
+import "response.proto";
+import "tasks.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/define/tasks_config";
+
+message TasksConfigEntry {
+  string name = 1;
+  repeated tasks.Task tasks = 2;
+}
+
+message ListTasksConfigsResponse {
+  repeated TasksConfigEntry configs = 1;
+  string error = 2;
+}
+
+message GetTasksConfigRequest {
+  string name = 1;
+}
+
+message GetTasksConfigResponse {
+  repeated tasks.Task tasks = 1;
+  string error = 2;
+}
+
+message SaveTasksConfigRequest {
+  string name = 1;
+  repeated tasks.Task tasks = 2;
+}
+
+message DeleteTasksConfigRequest {
+  string name = 1;
+}
+
+service TasksConfigService {
+  rpc ListTasksConfigs(request.EmptyRequest) returns (ListTasksConfigsResponse);
+  rpc GetTasksConfig(GetTasksConfigRequest) returns (GetTasksConfigResponse);
+  rpc SaveTasksConfig(SaveTasksConfigRequest) returns (response.StringResponse);
+  rpc DeleteTasksConfig(DeleteTasksConfigRequest) returns (response.StringResponse);
+}

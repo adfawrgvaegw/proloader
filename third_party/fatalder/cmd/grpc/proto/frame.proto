@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package fatalder.proto.frame;
+
+import "response.proto";
+import "request.proto";
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/frame";
+
+service FrameService {
+    rpc Ping(request.EmptyRequest) returns (response.Int64Response); // timestamp
+    rpc HasPassword(request.EmptyRequest) returns (response.BoolResponse);
+    rpc VerifyPassword(request.StringRequest) returns (response.BoolResponse);
+    rpc GetAPIKey(request.EmptyRequest) returns (response.StringResponse);
+    rpc SetAPIKey(request.StringRequest) returns (response.StringResponse);
+};

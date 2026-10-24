@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package fatalder.proto.request;
+
+option go_package = "github.com/Yeah114/Fatalder/cmd/grpc/pb/request";
+
+message EmptyRequest {}
+
+message StringRequest {
+    string data = 1;
+}
