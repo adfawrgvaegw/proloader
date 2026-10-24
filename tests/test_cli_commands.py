@@ -35,7 +35,10 @@ def test_real_import_dispatch_passes_password_in_memory_and_does_not_echo(tmp_pa
     args=build_parser().parse_args(['import','house.mcstructure','--to=1,2,3','--server','12345678','--password-stdin','--yes','--json'])
     # CLI owns a fresh loop. Restore pytest's previous default for Python 3.9
     # synchronous fixtures that construct asyncio.Queue/Lock before their runner.
-    previous=asyncio.get_event_loop()
+    try:
+        previous=asyncio.get_event_loop()
+    except RuntimeError:
+        previous=None
     try:
         assert commands.dispatch(args)==0
     finally:

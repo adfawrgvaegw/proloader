@@ -81,6 +81,7 @@ Connection/teleport failures still stop safely and preserve the checkpoint.
 The planner builds automatically on first use. To verify both native targets:
 
 ```sh
+export GOPROXY="${GOPROXY:-https://proxy.golang.org,https://goproxy.cn,direct}"
 cd third_party/fatalder
 go build -o ../../bin/fatalder-plan ./cmd/proloader-plan
 go build -o ../../bin/fatalder-upstream ./cmd/cli

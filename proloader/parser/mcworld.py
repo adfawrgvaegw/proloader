@@ -10,6 +10,7 @@ import subprocess
 from zipfile import ZipFile
 
 import numpy as np
+from proloader.native_build import go_build_environment
 from proloader.model.block import Block, BlockState
 from proloader.model.palette import BlockPalette
 from proloader.model.region import Region
@@ -33,7 +34,7 @@ def load_mcworld(path, name=None):
     if not metadata.exists():
         if not binary.exists() or not stamp.exists() or json.loads(stamp.read_text()).get('revision')!=revision:
             binary.parent.mkdir(exist_ok=True)
-            built=subprocess.run(['go','build','-o',str(binary),'./cmd/proloader-world'],cwd=source,capture_output=True,text=True,timeout=240)
+            built=subprocess.run(['go','build','-o',str(binary),'./cmd/proloader-world'],cwd=source,capture_output=True,text=True,timeout=240,env=go_build_environment())
             if built.returncode:raise ParseError('世界读取器编译失败：'+built.stderr[:300])
             stamp.write_text(json.dumps({'revision':revision}))
         extracted=folder/'world'

@@ -10,3 +10,5 @@ Initial experimental source release: rental-server login, building import, inter
 - Add GitHub CI for Python tests and native build checks.
 
 General block entity NBT, secondary liquids, full world cloning and standalone wheel packaging remain incomplete. See README.md and RELEASE_REVIEW.md.
+
+Build portability fixes: use a checksum-verified public Go mirror fallback for an unavailable upstream dependency, and preserve the absence of a default event loop in the Python 3.11 CLI test.

@@ -47,3 +47,5 @@ remain upstream public protocol material; see SECURITY.md.
 `third_party/fatalder-source.json` preserves provenance and hashes of the supplied
 upstream archive. Those hashes describe that input, not subsequent local adapters
 or sanitization. RELEASE_MANIFEST.json records the public snapshot file hashes.
+
+The pinned `github.com/Happy2018new/nemc-tan-lobby-solver v0.2.5` dependency remains externally resolved through a public Go module mirror. It is not vendored into this snapshot. The resolved module checksum is retained in the Go lockfiles.

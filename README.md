@@ -1,5 +1,7 @@
 # Proloader
 
+[![Offline checks](https://github.com/adfawrgvaegw/proloader/actions/workflows/ci.yml/badge.svg)](https://github.com/adfawrgvaegw/proloader/actions/workflows/ci.yml)
+
 网易《我的世界》基岩版租赁服建筑导入器，供协议学习和自己有权限的建筑施工使用。
 Python管理账号、连接与任务；施工规划直接调用仓库内的Fatalder原版Go代码。
 
@@ -183,3 +185,8 @@ python3 -m proloader simulate --help
 本源码包不附带账号、Cookie、PE token、私人建筑或开发者 Git 历史。运行时仍默认把新身份与任务保存到 `~/.proloader`；如与其他副本在同一系统账号下运行，会共享该目录和身份锁。请勿使用同一身份同时启动两个连接。源码副本并不自动隔离运行时账号。
 
 本次整理范围与离线验证结果见 [RELEASE_REVIEW.md](RELEASE_REVIEW.md)。报告只说明此源码快照，不代表线上完整验收。
+
+
+### Go dependency mirror
+
+The pinned nemc-tan-lobby-solver v0.2.5 module is unavailable from the default Go proxy. Native helper builds fall back to the public goproxy.cn mirror and keep go.sum verification enabled. Set GOPROXY explicitly to override this build-local default; no global Go or network settings are changed.

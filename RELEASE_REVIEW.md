@@ -34,3 +34,7 @@ Prepared 2026-10-24. The owner has authorized public GitHub upload. Remote publi
 未重新执行线上验收；大型建筑全量校验、普通方块实体 NBT、次层液体和其他 README 列出的能力缺口仍存在。当前按源码 checkout 使用，独立 wheel 资源打包尚未完成。
 
 Publication is authorized. Public repository: https://github.com/adfawrgvaegw/proloader. Preserve all upstream notices and dependency source references.
+
+## Fresh-runner portability follow-up
+
+The initial GitHub runner exposed an unavailable default-proxy dependency and a Python 3.11 test event-loop assumption. Native helper builds and CI now use a public mirror fallback without disabling Go checksum verification or changing global settings; explicit GOPROXY environment overrides remain supported. A clean module cache retrieved the pinned solver with the exact locked h1 checksum. The CLI test now restores an absent default loop correctly. Local Python regressions remain 471 passed. Current GitHub CI status is visible at https://github.com/adfawrgvaegw/proloader/actions/workflows/ci.yml.

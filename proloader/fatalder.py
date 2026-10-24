@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 import subprocess
+from proloader.native_build import go_build_environment
 
 FRAGILE = ('torch','ladder','button','lever','banner','flower','sapling','carpet',
            'tripwire','coral','lantern','end_rod','bell','bed','door','vine','bamboo')
@@ -96,7 +97,7 @@ def native_binary(target='plan'):
     if not binary.exists() or not stamp.exists() or json.loads(stamp.read_text()).get('source_sha256')!=version:
         binary.parent.mkdir(exist_ok=True)
         result=subprocess.run(['go','build','-o',str(binary),f'./cmd/proloader-{target}'],cwd=source,
-                              text=True,capture_output=True,timeout=240)
+                              text=True,capture_output=True,timeout=240,env=go_build_environment())
         if result.returncode:raise RuntimeError('Fatalder原生引擎编译失败：'+result.stderr[:500])
         stamp.write_text(json.dumps(dict(source_sha256=version)))
     return binary
