@@ -37,7 +37,7 @@
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/scripts/export_release.py": {
-      "sha256": "626a727507d30b30b2d1e31f8230eba1bb0a5869c0c27324a82d3a5fcf49fd94",
+      "sha256": "7b7a909c95d6b509eb72258a54cdcf126422ab48d9038012b90d261e6261091c",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/scripts/maintain.py": {
@@ -97,7 +97,7 @@
       "mode": "0o644"
     },
     "docs/ACCEPTANCE_20261028.md": {
-      "sha256": "6c011894d419ad3a1f49781a326b5a8170a6453bb5793163ff4e718606ef88dd",
+      "sha256": "5b80d116fa5b75761e3ff11dbb92255bfc51a78ec6e40e781eb148adfa741cc4",
       "mode": "0o644"
     },
     "docs/AI_CLI.md": {

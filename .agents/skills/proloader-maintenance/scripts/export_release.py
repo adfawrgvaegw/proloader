@@ -10,7 +10,7 @@ import shutil
 import tempfile
 
 ROOT_FILES={'README.md','LICENSE','LICENSE-MIT','THIRD_PARTY_NOTICES.md','pyproject.toml',
-            'proloader启动器.command','proloader维护.command','MAINTAINERS.md','.gitignore','SECURITY.md','RELEASE_REVIEW.md','CHANGELOG.md','AGENTS.md'}
+            'proloader启动器.command','proloader维护.command','MAINTAINERS.md','.gitignore','SECURITY.md','RELEASE_REVIEW.md','CHANGELOG.md'}
 SOURCE_DIRS={'proloader','tests','examples','third_party','tools','templates','assets'}
 SKILL=('.agents','skills','proloader-maintenance')
 DENIED_DIRS={'cache','bin','build','dist','.git','.venv','venv','__pycache__','.pytest_cache',

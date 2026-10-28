@@ -10,7 +10,7 @@
 
 ## 离线检查
 
-独立源码副本、临时 HOME：633 项 Python 测试通过，2 项跳过；跳过项依赖不随公开源码附带的本机网易下发校验模块。未排除三项坏 mcstructure 输入测试，它们在公开副本仍通过。后续构建环境/CLI 测试兼容复核 26 项通过。
+独立源码副本、临时 HOME：633 项 Python 测试通过，2 项跳过；跳过项依赖不随公开源码附带的本机网易下发校验模块。未排除三项坏 mcstructure 输入测试，它们在公开副本仍通过。后续构建环境/CLI 测试兼容复核 26 项通过。远程首轮暴露导出允许列表误纳入 AGENTS.md，已恢复排除；收紧后导出专项测试 3 项通过。此次上传的 AGENTS.md 是专门编写的公开贡献说明，私人记忆没有上传。
 
 mcpcheck、worldreader、nbtcodec、bdxreader 的 Go test/vet 通过；无测试文件的包只完成编译检查。Fatalder plan/nbt/world 三个原生助手构建通过。GitHub Actions 的新环境结果另以远程运行状态为准。
 
