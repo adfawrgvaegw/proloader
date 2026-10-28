@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "proloader"
-version = "0.1.0"
+version = "0.1.1"
 description = "网易我的世界基岩版租赁服建筑导入器（实验性，源码分发）"
 readme = "README.md"
 requires-python = ">=3.9"

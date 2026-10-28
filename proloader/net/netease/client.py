@@ -32,6 +32,21 @@ import requests
 
 from .pe_profiles import OFFICIAL_ENGINE, OFFICIAL_PATCHES, PEMetadataMismatchError, PEAuthenticationError
 
+
+class RentalWorldEnterError(RuntimeError):
+    """Safe world-enter failure; never retain the response or credentials."""
+    def __init__(self, code=None):
+        self.code = code if type(code) is int else None
+        super().__init__('rental_world_enter_rejected')
+
+
+class RentalWorldPending(RuntimeError):
+    def __init__(self, state=None, progress=None, total=None):
+        self.state = state if type(state) is int else None
+        self.progress = progress if type(progress) is int and progress >= 0 else None
+        self.total = total if type(total) is int and total > 0 else None
+        super().__init__('rental_world_starting')
+
 from proloader.net.netease.constants import (
     API_GATEWAY_URL,
     AUTH_SERVER_URL,
@@ -772,11 +787,37 @@ class NeteaseClient:
             "/rental-server-world-enter/get",
             {"server_id": server_id, "pwd": password},
         )
-        entity = result.get("entity", {})
+        status_entity = result.get('entity')
+        status_entity = status_entity if isinstance(status_entity,dict) else {}
+        self._last_world_enter_status = dict(
+            code=result.get('code') if type(result.get('code')) is int else None,
+            state=status_entity.get('state') if type(status_entity.get('state')) is int else None,
+            progress=status_entity.get('async_progress') if type(status_entity.get('async_progress')) is int else None,
+            total=status_entity.get('total_progress') if type(status_entity.get('total_progress')) is int else None,
+            host_present=bool(status_entity.get('mcserver_host')),
+            port_present=bool(status_entity.get('mcserver_port')),
+            port_type=type(status_entity.get('mcserver_port')).__name__)
+        if type(result.get('code')) is not int or result['code'] != 0:
+            raise RentalWorldEnterError(result.get('code'))
+        entity = result.get("entity") or {}
+        if not isinstance(entity, dict):
+            raise RentalWorldEnterError()
         host = entity.get("mcserver_host", "")
-        port = int(entity.get("mcserver_port", 0))
+        if host is None:
+            host = ''
+        raw_port = entity.get("mcserver_port", 0)
+        if raw_port is None or raw_port == '':
+            raw_port = 0
+        try:
+            port = int(raw_port) if not isinstance(raw_port, bool) else 0
+        except (ValueError, TypeError):
+            raise RentalWorldEnterError() from None
+        if not isinstance(host, str) or (port and not 1 <= port <= 65535):
+            raise RentalWorldEnterError()
         if not host or port == 0:
-            raise RuntimeError(f"进入租赁服世界失败: {result}")
+            if entity.get('state') == 0:
+                raise RentalWorldPending(entity.get('state'), entity.get('async_progress'), entity.get('total_progress'))
+            raise RentalWorldEnterError()
         logger.info("进入租赁服世界 → %s:%d", host, port)
         return host, port
 

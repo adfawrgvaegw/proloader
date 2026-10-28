@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 - 2026-10-28
+
+- Adapt the reviewed 3.9.43 patch pair and statically decode the eight-field dynamic MCP challenge; reject unknown templates.
+- Wait for explicitly starting rental worlds; preserve transport close reasons and stop on failure without default reconnect.
+- Add BDX import, stationary loading windows, differential local repair, and persistent offline codecs for supported NBT delivery.
+- Verify three 168-block house imports with full readback and a 60-second hold each; complex NBT and local repair optimizations still need live acceptance.
+- Preserve existing public-copy parser, privacy and fresh-runner fixes. See docs/ACCEPTANCE_20261028.md.
+
 ## 0.1.0 - 2026-10-24
 
 Initial experimental source release: rental-server login, building import, interactive CLI, task recovery, AI command-block tools, and offline native planning.

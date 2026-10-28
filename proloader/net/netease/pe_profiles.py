@@ -5,6 +5,10 @@ OFFICIAL_ENGINE='3.9.15.297907'
 OFFICIAL_PATCHES={
     ('3.9.41.300665','2d2833df3518783e52130aa8951c548f'),
     ('3.9.42.301055','65ce57607cdb2f70a040a1db7149279d'),
+    # 3.9.43: reviewed selected-module diff; four auth methods unchanged.
+    # The changed random key is loaded but unused by OnLoginWebServer.
+    # See docs/ACCEPTANCE_20261028.md for offline/live evidence.
+    ('3.9.43.301387','6427513f3429fbc2409cde2da8f5b905'),
 }
 
 

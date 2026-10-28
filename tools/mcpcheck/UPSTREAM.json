@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/yeah-god/unmcpk",
+  "commit": "0cda8e50b6656481abd166ef9e8d275ee8167bc2",
+  "license": "AGPL-3.0",
+  "files": [
+    {
+      "path": "pymarshal/convert.go",
+      "sha256": "a2c63b1d7e5aae1b6177a20d70869a94881dcd126139e649b9adad0844312565"
+    },
+    {
+      "path": "pymarshal/netease_code_0.go",
+      "sha256": "acfc152d4303ca1874ab7814878dab373dd020b3b37d02e0e0dc547052fea556"
+    },
+    {
+      "path": "pymarshal/netease_code_1.go",
+      "sha256": "c37084cfdcadeebb27af8a2419300df28616b8073b34a75a3ffc613d27988a20"
+    },
+    {
+      "path": "pymarshal/netease_code_2.go",
+      "sha256": "317a1fa58150ac2778a4883ed48d16597bb5ccc0105c19aeac19d036f6e17822"
+    },
+    {
+      "path": "pymarshal/netease_types.go",
+      "sha256": "fe818a2b636641c6c1b0490737d129839ca2b07171eca6137f13701a0fe4a653"
+    },
+    {
+      "path": "pymarshal/netease_opcode.go",
+      "sha256": "5241f21e9cdbaf5ce63494c4fc2512d1680d86d3c3495c89ae49dd364b0c53b5"
+    },
+    {
+      "path": "pymarshal/types.go",
+      "sha256": "c20a2e4047132bd771bca2736bd732dfde1f0b6bc2618c2a7daa877cf14c92ba"
+    },
+    {
+      "path": "pymarshal/utility.go",
+      "sha256": "fe8c3e018bedf6e9cbeb0ce901f3b8f09f756a49f5b1a779f076471925d06b00"
+    },
+    {
+      "path": "pymarshal/opcode.go",
+      "sha256": "d4bb5730571297e1a4d049a18d9fe126b35aae377559dbf8237e877351b156dc"
+    }
+  ]
+}

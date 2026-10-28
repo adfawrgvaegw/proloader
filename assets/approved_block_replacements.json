@@ -1,0 +1,394 @@
+{
+  "3fe19b55ea67c135a00ffc525a3c406b051ad8ccbe6aad97bfd22bb0fc362659": [
+    {
+      "local": [
+        175,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        177,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        178,
+        60,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        178,
+        61,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        180,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        182,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        185,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        186,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        186,
+        59,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        186,
+        60,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        187,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        188,
+        58,
+        218
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        230,
+        42,
+        87
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        230,
+        42,
+        92
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        230,
+        43,
+        92
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        97
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        98
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        97
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        98
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        99
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        101
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        102
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        106
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        110
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        102
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        110
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        176
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        177
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        177
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        181
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        185
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        188
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        189
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        190
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        42,
+        191
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        185
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        189
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        190
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    },
+    {
+      "local": [
+        241,
+        43,
+        191
+      ],
+      "from_name": "minecraft:white_concrete_powder",
+      "name": "minecraft:white_concrete",
+      "states": {}
+    }
+  ]
+}

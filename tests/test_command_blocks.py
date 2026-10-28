@@ -108,7 +108,10 @@ def test_subchunk_request_matches_upstream(position,dimension):
 def test_native_decodes_two_distinct_upstream_entities(kind):
     fixture = json.loads((ROOT/f'tests/fixtures/command_block_wire/{kind}.json').read_text())
     decoded = decode_subchunk(wrap_packet(174,base64.b64decode(fixture['data'])))
-    assert decoded == fixture['decoded']
+    entities_only = dict(decoded,entries=[{k:v for k,v in e.items() if k not in ('blocks','palette','header_y')}
+                                         for e in decoded['entries']])
+    assert entities_only == fixture['decoded']
+    assert len(decoded['entries'][0]['blocks']) == 4096
     nbt = decoded['entries'][0]['nbt']
     assert [n['x'] for n in nbt] == [-17,-16]
     assert all(n['Command']=='say hello' for n in nbt)
@@ -204,9 +207,9 @@ async def test_staging_is_separate_and_readback_controls_durable_completion(tmp_
         # shell placement or the already-correct update packet.
         reads.clear();count=len(shells)
         job=await execute_import(p,None,SimpleNamespace(id='bot'),'server','SECRET',resume=job['id'],**kwargs)
-        assert len(shells)==count and len(writes)==1
+        assert len(shells)==count and len(writes)==(3 if fail=='mismatch' else 1)
         assert job['command_blocks_state']=='staged_readback_verified'
-    assert len(writes)==1 and reads
+    assert len(writes)==(3 if fail=='mismatch' else 1) and reads
     saved=next((tmp_path/'jobs').glob('*.json')).read_text()
     assert 'SECRET' not in saved and 'say 你好' not in saved
 
@@ -342,3 +345,62 @@ def test_netease_ui_mode_cache_is_not_used_as_block_state_evidence(tmp_path):
     # Mode, condition, and facing are checked with testforblock states separately.
     observed['TickDelay']=999
     assert block.differences(observed)==['TickDelay']
+
+
+async def test_exhausted_local_nbt_reads_keep_interactive_connection_for_repair(tmp_path,monkeypatch):
+    import proloader.importer as module
+    p=make_plan(tmp_path);data=dict(expected_nbt(p.command_blocks[0]),Command='old')
+    reads=[0];closed=[];actions=iter(('repair','done'));notices=[]
+    class Session:
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={})
+        def _raise_if_failed(self):pass
+        async def read_block_entity(self,*a):
+            reads[0]+=1
+            if reads[0]<=3:raise asyncio.TimeoutError()
+            return dict(data)
+        async def send_packet(self,*a):data.update(expected_nbt(p.command_blocks[0]))
+    @asynccontextmanager
+    async def connect(*a,**kw):
+        yield Session(),'bot'
+        closed.append(True)
+    class World:
+        def __init__(self,*a):pass
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):pass
+        async def place(self,*a,**kw):data['Command']=''
+        async def check_command_block(self,*a):return True
+    class Console:
+        def __init__(self,w,p,job,**kw):self.job=job
+        async def __aenter__(self):return self
+        async def __aexit__(self,*a):pass
+        async def notice(self,text):notices.append(text)
+        async def next_action(self):
+            action=next(actions)
+            assert not closed
+            if action=='repair':assert self.job['recovery_error'] and not self.job['delivery_complete']
+            else:assert self.job['delivery_complete'] and 'recovery_error' not in self.job
+            return action,'player'
+    monkeypatch.setattr(module,'rental_session',connect);monkeypatch.setattr(module,'WorldCommands',World)
+    monkeypatch.setattr(module,'GameConsole',Console)
+    result=await execute_import(p,None,SimpleNamespace(id='bot'),'server','',verify='none',
+        command_block_mode='stage',stay_online=True,jobs_root=tmp_path/'jobs')
+    assert result['state']=='finished' and result['command_blocks_next']==1 and closed==[True]
+    assert any('连接保留' in text for text in notices)
+
+
+async def test_partial_height_reads_keep_default_nbt_strict_and_validate_envelope(monkeypatch):
+    session=BedrockSession(None)
+    response=wrap_packet(174,b'\x00\x00\x03\x00\x05')
+    async def send(request):session._dispatch_packet(response)
+    monkeypatch.setattr(session,'send_packet',send)
+    import proloader.command_blocks as module
+    data=dict(dimension=0,position=[-2,0,-3],entries=[
+        dict(offset=[0,-4,0],result=1,nbt=[]),dict(offset=[0,-3,0],result=2,nbt=[])])
+    monkeypatch.setattr(module,'decode_subchunk',lambda p:data)
+    with pytest.raises(ValueError,match='拒绝'):
+        await session.read_subchunks((-17,-60,-33),'overworld',[-4,-3])
+    assert len(await session.read_subchunks((-17,-60,-33),'overworld',[-4,-3],allow_partial=True))==2
+    assert not session._subchunk_waiters
+    data['entries'][1]['offset']=[0,-2,0]
+    with pytest.raises(ValueError,match='位置'):
+        await session.read_subchunks((-17,-60,-33),'overworld',[-4,-3],allow_partial=True)

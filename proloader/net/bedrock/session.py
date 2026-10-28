@@ -138,6 +138,10 @@ class BedrockSession:
         self._netease_uid: int = netease_uid
         # 网易 Bedrock 协议版本（686 = 1.21.2）
         self._netease_protocol: int = netease_protocol
+        self._mcp_challenge_tasks = set()
+        # 860 was live-validated with the NEMC camera/ground extension, not the
+        # legacy 686 or vanilla PlayerAuthInput layout.
+        self._teleport_ack_supported = netease_mode and netease_protocol == 860
         # 网易解压器（有状态，维护跨 batch 的 32KB 滑动窗口字典）
         # fatalder compression.go:neteaseCompression.Decompress 用 dict 实现跨 batch 解压
         self._netease_decompressor: Optional[NeteaseDecompressor] = (
@@ -177,10 +181,13 @@ class BedrockSession:
         self._waiting: dict = {}
         self._subchunk_waiters: dict = {}
         self._subchunk_lock = asyncio.Lock()
+        self._teleport_ack_tasks = set()
+        self._teleport_ack_count = 0
         # 收包循环任务
         self._recv_task: Optional[asyncio.Task] = None
         self._closed = False
         self._chat_subscribers = set()
+        self._player_teleport_subscribers = set()
         self._command_result_subscribers = set()
         self._ai_result_contexts = {}
         self._command_result_dropped = 0
@@ -379,9 +386,12 @@ class BedrockSession:
         # 121 是服务端定期发的区块发布更新（包含区块坐标），不是半径确认包。
         # 之前误把 121 当响应，实际上服务端发 121 是正常区块推送，同时因为 maxRadius 格式错误
         # 触发了 PacketViolationWarning。
-        await self._wait_packet(
+        radius_packet = await self._wait_packet(
             PacketID.CHUNK_RADIUS_UPDATED, timeout, "ChunkRadiusUpdated"
         )
+        from proloader.net.raknet.wire import ByteReader
+        from .packets import unwrap_packet
+        self._chunk_radius=ByteReader(unwrap_packet(radius_packet)[1]).read_varint()
         logger.info("游戏初始化 [5/7] 收到 ChunkRadiusUpdated")
 
         # ── 步骤 6：等 PlayStatus(PLAYER_SPAWN) ──────────────────
@@ -488,7 +498,10 @@ class BedrockSession:
         except BedrockLoginError as e:
             self._raise_if_failed()  # 会话终止不能降级成单条命令无输出。
             # AfterExecuteCommandEvent(executeResult=False) 或 AvailableCheckFailed
-            logger.warning("aiCommand %s 执行失败: %s", command, e)
+            # A negative read predicate is normal during difference discovery.
+            # The importer records/reports actual gaps; avoid thousands of
+            # warning lines competing with its live progress panel.
+            logger.debug("aiCommand %s 执行失败: %s", command, e)
             return None
         finally:
             self._ai_command_futures.pop(request_uuid, None)
@@ -837,8 +850,19 @@ class BedrockSession:
         """发送一个游戏包（按协商的压缩参数，加密后发）。"""
         await self._send_packet(packet_bytes)
 
-    async def read_block_entity(self, position, dimension='overworld', timeout=8):
-        """Read fresh NBT through this connection; timeout/malformed data never mean success."""
+    async def read_subchunk(self, position, dimension='overworld', timeout=8):
+        return (await self.read_subchunks(position,dimension,[position[1]//16],timeout))[0]
+
+    async def read_subchunks(self, position, dimension, heights, timeout=8, *, allow_partial=False):
+        return await self._read_subchunk_entries(position,dimension,[(0,h,0) for h in heights],timeout,allow_partial=allow_partial)
+
+    async def read_chunk_window(self, lo, hi, height, dimension='overworld', timeout=3):
+        minx,minz=lo[0]//16,lo[1]//16
+        offsets=[(x-minx,height//16,z-minz) for x in range(minx,hi[0]//16+1) for z in range(minz,hi[1]//16+1)]
+        return await self._read_subchunk_entries((lo[0],height,lo[1]),dimension,offsets,timeout)
+
+    async def _read_subchunk_entries(self, position, dimension, offsets, timeout=8, *, allow_partial=False):
+        """Read a fresh cube once; no persistent world cache across writes."""
         from proloader.command_blocks import DIMENSIONS, decode_subchunk
         from .command_block import build_subchunk_request
         dimension_id = DIMENSIONS[dimension]
@@ -849,25 +873,36 @@ class BedrockSession:
             future = asyncio.get_running_loop().create_future()
             self._subchunk_waiters[key] = future
             try:
-                await self.send_packet(build_subchunk_request(position, dimension_id))
+                await self.send_packet(build_subchunk_request(position, dimension_id, offsets=offsets))
                 response = await asyncio.wait_for(future, timeout)
                 data = await asyncio.to_thread(decode_subchunk, response)
-                expected_offset = [0, position[1]//16, 0]
-                entries = [e for e in data['entries'] if e['offset'] == expected_offset]
-                if data['dimension'] != dimension_id or data['position'] != list(key[1:]) or len(entries) != 1:
+                entries=data['entries']
+                expected=set(offsets)
+                offsets=[tuple(e['offset']) for e in entries]
+                if (data['dimension'] != dimension_id or data['position'] != list(key[1:])
+                        or len(entries)!=len(expected) or set(offsets)!=expected):
                     raise ValueError('子区块响应与请求位置不一致。')
-                entry = entries[0]
-                if entry['result'] not in (1, 6):
-                    raise ValueError('服务器拒绝了子区块读取请求。')
-                matches = [nbt for nbt in entry['nbt'] if tuple(nbt.get(k) for k in ('x','y','z')) == position]
-                if len(matches) != 1:
-                    raise ValueError('目标方块NBT缺失或重复，未确认内部数据。')
+                for entry in entries:
+                    if entry['result'] not in (1,6) and not allow_partial:
+                        raise ValueError(f'服务器拒绝了子区块读取请求（状态 {entry["result"]}，偏移 {entry["offset"]}）。')
+                    if entry.get('header_y',entry['offset'][1])!=entry['offset'][1]:
+                        raise ValueError('子区块内部高度与请求不一致。')
                 self._raise_if_failed()
-                return matches[0]
+                return entries
             finally:
                 self._subchunk_waiters.pop(key, None)
                 if not future.done():future.cancel()
                 elif not future.cancelled():future.exception()
+
+    async def read_block_entity(self, position, dimension='overworld', timeout=8):
+        entry = await self.read_subchunk(position, dimension, timeout)
+        matches = [nbt for nbt in entry['nbt']
+                   if tuple(nbt.get(k) for k in ('x','y','z')) == tuple(position)]
+        if len(matches) != 1:
+            raise ValueError('目标方块NBT缺失或重复，未确认内部数据。')
+        if '_decode_error' in matches[0]:
+            raise ValueError('目标方块NBT解码失败，未确认内部数据。')
+        return matches[0]
 
     async def recv_packet(self) -> bytes:
         """收一个游戏包（已解密解压）。"""
@@ -903,6 +938,9 @@ class BedrockSession:
             self._recv_task.cancel()
             with suppress(asyncio.CancelledError):
                 await self._recv_task
+        ack_tasks=list(self._teleport_ack_tasks) + list(self._mcp_challenge_tasks)
+        for task in ack_tasks:task.cancel()
+        if ack_tasks:await asyncio.gather(*ack_tasks,return_exceptions=True)
         if self._raknet is not None:
             await self._raknet.stop()
 
@@ -932,7 +970,11 @@ class BedrockSession:
                 data = await self._raknet.recv()
             except Exception as exc:
                 if not self._closed:
-                    self._fail_session(BedrockLoginError(f"RakNet 收包失败 ({type(exc).__name__})"))
+                    reason = getattr(self._raknet, 'close_reason', None)
+                    reasons = {'peer_disconnect': '服务端关闭连接', 'socket_error': '网络套接字中断',
+                               'receive_window_exceeded': '接收窗口超限', 'local_stop': '本机连接已关闭'}
+                    detail = reasons.get(reason, type(exc).__name__)
+                    self._fail_session(BedrockLoginError(f"RakNet 收包失败 ({detail})"))
                 return
             if not data or data[0] != ID_BATCH:
                 logger.debug("非 Batch 帧 0x%02x，丢弃", data[0] if data else -1)
@@ -980,6 +1022,14 @@ class BedrockSession:
     def unsubscribe_chat(self, queue):
         self._chat_subscribers.discard(queue)
 
+    def subscribe_player_teleports(self):
+        queue=asyncio.Queue(maxsize=8)
+        self._player_teleport_subscribers.add(queue)
+        return queue
+
+    def unsubscribe_player_teleports(self,queue):
+        self._player_teleport_subscribers.discard(queue)
+
     def _dispatch_packet(self, packet: bytes) -> None:
         """把拆出的 packet 分发给等待者或投递到 inbox。"""
         if self._terminal_error is not None:
@@ -1000,6 +1050,28 @@ class BedrockSession:
             self._fail_session(error)
             return
         logger.info("← 收到 packet_id=%d [%d B]: %s", pid, len(packet), packet[:32].hex())
+
+        if (pid == PacketID.MOVE_PLAYER and getattr(self,'_teleport_ack_supported',False) and getattr(self,'_netease_mode',False)
+                and getattr(self,'_netease_protocol',None) in (686,860)):
+            from .movement import read_player_teleport,build_teleport_ack
+            try:runtime_id,position,mode=read_player_teleport(packet)
+            except (ValueError,EOFError):return
+            if runtime_id==self._entity_runtime_id and mode==2:
+                self._last_server_position=position
+                expected=getattr(self,'_import_teleport_target',None)
+                own=expected is not None and all(abs(a-b)<=3 for a,b in zip(expected,position))
+                for queue in tuple(getattr(self,'_player_teleport_subscribers',())):
+                    if queue.full():queue.get_nowait()
+                    queue.put_nowait(dict(position=position,importer_move=own))
+                async def acknowledge():
+                    try:
+                        await self.send_packet(build_teleport_ack(position,self._netease_protocol))
+                        self._teleport_ack_count+=1
+                    except Exception as exc:
+                        self._fail_session(BedrockLoginError(f'传送确认发送失败 ({type(exc).__name__})'))
+                task=asyncio.create_task(acknowledge())
+                self._teleport_ack_tasks.add(task)
+                task.add_done_callback(self._teleport_ack_tasks.discard)
 
         if pid == PacketID.SUB_CHUNK and getattr(self, '_subchunk_waiters', None):
             from .command_block import subchunk_key
@@ -1110,8 +1182,7 @@ class BedrockSession:
             except Exception as e:
                 logger.warning("MCP StartType 处理失败: %s", e)
         elif name == "GetMCPCheckNum":
-            # MCP CheckNum challenge：打印完整 payload + 发假回复试探服务端
-            logger.info("← GetMCPCheckNum 完整 payload: %s", str(payload))
+            logger.info("Received delivered MCP check module")
             self._handle_mcp_check_num(payload)
         elif name == "ModEventS2C":
             # aiCommand 响应（fatalder 格式，实测网易不用这个，但保留兼容）
@@ -1160,74 +1231,38 @@ class BedrockSession:
         logger.info("→ MCP SetStartType 已回复")
 
     def _handle_mcp_check_num(self, payload: Any) -> None:
-        """处理 MCP CheckNum challenge（算法已从网易客户端 vanilla.mcp 逆向得到）。
-
-        ★ 算法来源：vanilla.mcp 解包 → mod/server/system/dynamicMCP.py 反编译：
-            CalcCheckNum(data) = MD5('l00g<ks' + data + 'tsa').hexdigest()
-            GetCheckNum(salt):
-                valM = CalcCheckNum(salt)              # = MD5('l00g<ks' + salt + 'tsa')
-                sign = MD5(valM[16:] + valM[:16])      # valM 旋转 16 字符再 MD5
-                return [valM, sign]
-
-        客户端流程（clientrpchandler.py GetMCPCheckNum，388-401 行）：
-            data = binascii.unhexlify(mcp_hex)         # 服务端下发的 dynamicMCPLoader 模块
-            dyMCP = McpImporter.read_module('dynamicMCPLoader', data)  # rotor+zlib+reverse 解密
-            valM = dyMCP.GetCheckNum(salt)             # 上面算法
-            rpc.CServerRpc().SetMCPCheckNum(valM)      # 回发 [valM, sign]
-
-        服务端校验（dynamicMCP.py CheckMCPClientNum）：接受 len(params)>=2，
-        验证 params[0]==valK 且 params[1]==MD5(valM[16:] + extra + valM[:16])。
-        标准 2 元素响应 [valM, sign] 即可通过。
-
-        GetMCPCheckNum payload 格式（fatalder get_mc_pc_check_num.go）：
-            [mcp_hex, [salt, FirstExtraData, SecondExtraData]]
-        SetMCPCheckNum payload 格式：
-            ["SetMCPCheckNum", [valM, sign], None]
-
-        ⚠️ 服务端下发的 dynamicMCPLoader 理论上可能和 bundled dynamicMCP.py 不同。
-           若此算法被拒，用记录的 mcp_hex 离线解码验证（NlsCipher+zlib+reverse+marshal）。
-        """
-        import hashlib
-        from proloader.net.bedrock.netease_packets import build_py_rpc
-
-        # 解析 payload: [mcp_hex, [salt, FirstExtraData, SecondExtraData]]
-        first_arg = None
-        salt = None
-        if isinstance(payload, list) and len(payload) >= 2:
-            first_arg = payload[0]
-            if isinstance(payload[1], list) and len(payload[1]) >= 1:
-                salt = payload[1][0]
-
-        # msgpack 解码后可能是 bytes，统一转 str
-        if isinstance(salt, bytes):
-            salt = salt.decode("utf-8", "replace")
-        if isinstance(first_arg, bytes):
-            first_arg_str = first_arg.decode("utf-8", "replace")
-        else:
-            first_arg_str = str(first_arg) if first_arg else ""
-
-        logger.info(
-            "MCP CheckNum: mcp_hex(%d chars) salt=%r EntityUID=%d",
-            len(first_arg_str), salt, self._entity_runtime_id,
-        )
-        # 记录完整 mcp_hex 便于离线解码（NlsCipher 解密 → 反编译 dynamicMCPLoader 验证算法）
-        logger.info("MCP CheckNum mcp_hex 全文: %s", first_arg_str)
-
-        if not salt:
-            logger.warning("MCP CheckNum: salt 为空，无法计算，跳过")
-            return
-
-        # ★ 真实算法（dynamicMCP.py 逆向）
-        message = "l00g<ks" + salt + "tsa"
-        valM = hashlib.md5(message.encode("utf-8")).hexdigest()
-        rawS = valM[16:] + valM[:16]  # valM 旋转 16 字符
-        sign = hashlib.md5(rawS.encode("utf-8")).hexdigest()
-        response = [valM, sign]
-        logger.info("MCP CheckNum 算法结果: valM=%s sign=%s", valM, sign)
-
-        set_check_num_pkt = build_py_rpc(["SetMCPCheckNum", response, None])
-        asyncio.ensure_future(self._send_packet(set_check_num_pkt))
-        logger.info("→ MCP SetMCPCheckNum 已回复（真实算法 [valM, sign]）")
+        """Statically decode a reviewed delivered profile and return its full schema."""
+        async def respond():
+            phase = 'validate'
+            try:
+                if not isinstance(payload,list) or len(payload)!=2 or not isinstance(payload[1],list) or len(payload[1])!=3:
+                    raise ValueError('unsupported_challenge_shape')
+                module,salt=payload[0],payload[1][0]
+                if isinstance(module,bytes):module=module.decode('ascii')
+                if isinstance(salt,bytes):salt=salt.decode('ascii')
+                # The challenge may arrive in the same batch as StartGame.
+                phase = 'wait_start_game'
+                for _ in range(100):
+                    if self._start_game is not None:break
+                    await asyncio.sleep(.01)
+                if self._start_game is None:raise ValueError('missing_start_game')
+                from proloader.net.netease.mcp_check import solve
+                phase = 'decode'
+                response,profile=await asyncio.to_thread(solve,module,salt,self._start_game.entity_unique_id,
+                    getattr(self,'_netease_engine_version',''),getattr(self,'_netease_patch_version',''))
+                self._raise_if_failed()
+                from .netease_packets import build_py_rpc
+                phase = 'reply'
+                await self._send_packet(build_py_rpc(['SetMCPCheckNum',response,None]))
+                event=getattr(self,'_diagnostic_event',None)
+                if event:event('mcp_check_replied',template_sha256=profile,fields=len(response))
+            except Exception as exc:
+                event=getattr(self,'_diagnostic_event',None)
+                if event:event('mcp_check_failed',phase=phase,error_type=type(exc).__name__)
+                self._fail_session(BedrockLoginError('MCP 校验格式尚未适配或解析失败（'+type(exc).__name__+'）'))
+        task=asyncio.create_task(respond())
+        self._mcp_challenge_tasks.add(task)
+        task.add_done_callback(self._mcp_challenge_tasks.discard)
 
     def _handle_after_execute_command(self, data: Any) -> None:
         """处理 AfterExecuteCommandEvent（命令执行成功/失败）。

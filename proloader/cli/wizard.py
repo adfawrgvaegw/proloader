@@ -19,6 +19,7 @@ from rich.text import Text
 from proloader.bots import BotStore, private_json
 from proloader.cli import ui
 from proloader.importer import prepare_import, execute_import, PlacementCheckError
+from proloader.pacing import DEFAULT_BURST
 from proloader.net.netease.runtime import verify_bot, RentalError
 from proloader.net.netease.mobile_login import create_classic_mobile_provider, MobileLoginError
 
@@ -53,7 +54,7 @@ def pending_jobs():
             key=(job['server'],job['bot_id'],job['plan']['sha256'],tuple(job['plan']['origin']),job['plan']['dimension'])
             if key in seen:continue
             seen.add(key)
-            if job['state'] in ('paused','failed','placing','connecting','preflight','loading','verifying','repairing','manual_repair','awaiting_action','reconnecting','verification_failed','command_block_data'):
+            if job['state'] in ('paused','failed','placing','connecting','preflight','loading','verifying','repairing','manual_repair','awaiting_action','reconnecting','verification_failed','command_block_data','command_block_repair','block_entity_data','manual_repair_check','repair_verifying','cleanup'):
                 result.append(job)
         except (OSError,ValueError,KeyError,TypeError):continue
     return result
@@ -73,7 +74,7 @@ def show_error(exc):
         message=f'网易登录未完成：阶段 {exc.stage}'
         if type(exc.code) is int:message+=f'，错误码 {exc.code}'
         message+='。不会自动重发短信。'
-    elif isinstance(exc,(RentalError,ValueError,PlacementCheckError)) or exc.__class__.__name__ in ('ParseError','BedrockLoginError'):
+    elif isinstance(exc,(RentalError,ValueError,PlacementCheckError)) or exc.__class__.__name__ in ('ParseError','BedrockLoginError','CommandUnconfirmedError'):
         message=str(exc)[:400]
     else:
         message=f'这一步未能完成（{type(exc).__name__}）。已保存的机器人和导入断点仍可使用。'
@@ -151,12 +152,12 @@ def manage_bots(store):
 
 def select_file():
     candidates=sorted((PROJECT/'buildings').glob('*')) if (PROJECT/'buildings').exists() else []
-    candidates=[p for p in candidates if p.is_file() and p.suffix.lower() in ('.schem','.schematic','.mcstructure','.mcworld')]
+    candidates=[p for p in candidates if p.is_file() and p.suffix.lower() in ('.bdx','.schem','.schematic','.mcstructure','.mcworld')]
     choice=ui.choose('选择建筑文件',[p.name for p in candidates]+['选择其他文件'],
                      descriptions=[f'{p.stat().st_size/1024:.1f} KB' for p in candidates]+['拖入文件，或输入完整路径。'])
     if choice<0:raise ui.Back()
     if choice<len(candidates):return candidates[choice]
-    ui.screen(*ui.chrome('开始导入',step=2),Text('将 .schem / .schematic / .mcstructure / .mcworld 文件拖到终端。',style='muted'),Text(''))
+    ui.screen(*ui.chrome('开始导入',step=2),Text('将 .bdx / .schem / .schematic / .mcstructure / .mcworld 文件拖到终端。',style='muted'),Text(''))
     return input_path(ui.ask('建筑文件'))
 
 
@@ -169,7 +170,7 @@ def review(plan,bot,server,verify,rate=4000,command_block_mode='reject'):
             ('维度',{'overworld':'主世界','nether':'下界','the_end':'末地'}[s['dimension']]),
             ('起点','  '.join(map(str,s['origin']))),('终点','  '.join(map(str,s['end']))),
             ('非空气方块',f"{s['blocks']:,}"),('合并后命令',f"{s['commands']:,}"),
-            ('发送速率',f'{rate:,} 条/秒 · 突发 {rate:,} 条'),('空气处理','跳过空气，保留建筑空白处原有内容'),('世界校验',mode)])
+            ('发送上限',f'{rate:,} 条/秒 · 突发最多 {min(rate,DEFAULT_BURST):,} 条'),('空气处理','跳过空气，保留建筑空白处原有内容'),('世界校验',mode)])
         warnings=[Panel(Text(w),border_style='warning',title='兼容性说明') for w in s['warnings']]
         if s.get('command_blocks'):
             warnings.insert(0,Panel(Text('命令方块：'+('暂存内部指令并读回；需要红石、首刻执行关闭。' if command_block_mode=='stage' else '仅放外壳，跳过内部指令。')),title='本次处理方式'))
@@ -191,7 +192,7 @@ async def perform(plan,store,bot,server,password,verify,resume=None,rate=4000,co
                 live.update(progress.render())
                 last[:]=[now,job['state']]
         return await execute_import(plan,store,bot,server,password,verify=verify,
-                                     progress=update,resume=resume,commands_per_second=rate,live_console=True,stay_online=True,reconnect_attempts=5,
+                                     progress=update,resume=resume,commands_per_second=rate,live_console=True,stay_online=True,reconnect_attempts=0,
                                      command_block_mode=command_block_mode)
 
 
@@ -203,13 +204,19 @@ def show_result(result):
         ('建筑',result['plan']['name']),('已发送命令',f"{result['submitted']:,} / {result['plan']['commands']:,}"),
         ('世界校验',f"{result['passed']} / {result['checked']} 通过" if result['checked'] else '未执行'),
         ('用时',f"{result.get('elapsed_seconds',0):.1f} 秒"),('任务记录',result['id'])]),border_style='good' if status=='completed' else 'accent',padding=(1,2)))
+    if status in ('paused','failed','reconnecting'):
+        details = result.get('error_details',{})
+        reason = details.get('message') or result.get('detail') or result.get('error_type','原因未记录')
+        ui.notice('暂停原因',reason,'warning')
+        if result.get('error_type'):
+            ui.notice('错误类型',result['error_type'],'warning')
     for warning in result['plan']['warnings']:ui.notice('兼容性说明',warning,'warning')
     pause()
 
 
 def choose_rate(default=4000):
     options=[f'使用默认速度 · {default:,} 条/秒','中速 · 2000 条/秒','较保守 · 1000 条/秒','自定义速度']
-    selected=ui.choose('选择发送速度',options,descriptions=['默认4000；平滑突发10条；实际吞吐受服务器和校验影响。','降低发送上限，实际速度仍取决于服务器。','适合较慢的服务器。','范围1～5000，发送速率不等于方块落地速度。'])
+    selected=ui.choose('选择发送上限',options,descriptions=['默认4000；平滑突发10条；实际吞吐受服务器和校验影响。','降低发送上限，实际速度仍取决于服务器。','适合较慢的服务器。','范围1～5000，发送速率不等于方块落地速度。'])
     if selected<0:raise ui.Back()
     if selected<3:return (default,2000,1000)[selected]
     from proloader.cli.main import speed

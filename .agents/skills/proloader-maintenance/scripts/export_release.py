@@ -10,8 +10,8 @@ import shutil
 import tempfile
 
 ROOT_FILES={'README.md','LICENSE','LICENSE-MIT','THIRD_PARTY_NOTICES.md','pyproject.toml',
-            'proloader启动器.command','proloader维护.command','MAINTAINERS.md','.gitignore','SECURITY.md','RELEASE_REVIEW.md','CHANGELOG.md'}
-SOURCE_DIRS={'proloader','tests','examples','third_party','tools','templates'}
+            'proloader启动器.command','proloader维护.command','MAINTAINERS.md','.gitignore','SECURITY.md','RELEASE_REVIEW.md','CHANGELOG.md','AGENTS.md'}
+SOURCE_DIRS={'proloader','tests','examples','third_party','tools','templates','assets'}
 SKILL=('.agents','skills','proloader-maintenance')
 DENIED_DIRS={'cache','bin','build','dist','.git','.venv','venv','__pycache__','.pytest_cache',
              '.proloader','bots','imports','node_modules','proloader_sessions'}
@@ -26,7 +26,7 @@ def allowed(relative):
     if relative.suffix.lower() in DENIED_SUFFIXES or relative.name in DENIED_NAMES:return False
     if len(parts)==1:return relative.name in ROOT_FILES
     if relative.as_posix()=='.github/workflows/ci.yml':return True
-    if parts[0]=='docs':return relative.as_posix() in {'docs/AI_CLI.md','docs/SNOW_MENU_INSTALL.md'}
+    if parts[0]=='docs':return relative.as_posix() in {'docs/AI_CLI.md','docs/SNOW_MENU_INSTALL.md','docs/OTHER_NBT.md','docs/BDX_IMPORT.md','docs/ACCEPTANCE_20261028.md'}
     if relative.as_posix()=='tools/gophertunnel_test/gophertunnel_test':return False
     return parts[0] in SOURCE_DIRS or parts[:3]==SKILL
 

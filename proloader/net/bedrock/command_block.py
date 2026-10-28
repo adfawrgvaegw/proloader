@@ -28,17 +28,25 @@ def build_command_block_update(position, *, mode, needs_redstone, conditional,
     return wrap_packet(PacketID.COMMAND_BLOCK_UPDATE, w.to_bytes())
 
 
-def build_subchunk_request(position, dimension):
+def build_subchunk_request(position, dimension, heights=None, offsets=None):
     if dimension not in (0, 1, 2) or len(position) != 3:
         raise ValueError('Invalid subchunk request')
     x, y, z = position
-    if not -128 <= y//16 <= 127:
+    if offsets is not None:
+        if heights is not None:raise ValueError('Conflicting subchunk offsets')
+        offsets=list(offsets)
+        if not offsets or len(offsets)>1024 or len(set(offsets))!=len(offsets) or any(len(v)!=3 or any(type(n) is not int or not -128<=n<=127 for n in v) for v in offsets):
+            raise ValueError('Invalid subchunk offsets')
+    heights=[y//16] if heights is None else list(heights)
+    if not heights or len(heights)>32 or len(set(heights))!=len(heights) or any(type(h) is not int or not -128<=h<=127 for h in heights):
         raise ValueError('Invalid subchunk height')
     w = ByteWriter()
     w.write_varint(dimension)
     for v in (x//16, 0, z//16):w.write_varint(v)
-    w.write_u32(1)
-    for v in (0, y//16, 0):w.write_byte(v & 255)
+    offsets=offsets if offsets is not None else [(0,h,0) for h in heights]
+    w.write_u32(len(offsets))
+    for offset in offsets:
+        for v in offset:w.write_byte(v & 255)
     return wrap_packet(PacketID.SUB_CHUNK_REQUEST, w.to_bytes())
 
 

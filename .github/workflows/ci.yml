@@ -33,3 +33,8 @@ jobs:
           go build -o /tmp/proloader-world ./cmd/proloader-world
           go build -o /tmp/fatalder-upstream ./cmd/cli
           go test ./cmd/proloader-nbt ./cmd/proloader-world
+      - name: New offline helpers
+        run: |
+          for helper in mcpcheck worldreader nbtcodec bdxreader; do
+            (cd tools/$helper && go test ./... && go vet ./...)
+          done

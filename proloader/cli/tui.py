@@ -568,7 +568,7 @@ def _select_building_file() -> Optional[str]:
         if not root.exists():
             continue
         for p in sorted(root.iterdir()):
-            if p.suffix.lower() in (".mcstructure", ".schem", ".schematic", ".litematic"):
+            if p.suffix.lower() in (".bdx", ".mcstructure", ".schem", ".schematic", ".litematic"):
                 if p not in candidates:
                     candidates.append(p)
     opts = [f"{p.name}  ({p.stat().st_size // 1024} KB)  [{p.parent}]" for p in candidates]

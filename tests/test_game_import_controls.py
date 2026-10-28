@@ -73,6 +73,83 @@ async def test_controls_ignore_early_done_and_bot_echoes():
     assert game.tasks and all(t.done() for t in game.tasks)
 
 
+async def test_external_teleports_trigger_local_repair_and_coalesce_without_feedback_loop():
+    from unittest.mock import Mock
+    chat=asyncio.Queue();teleports=asyncio.Queue()
+    session=SimpleNamespace(subscribe_chat=lambda:chat,unsubscribe_chat=lambda q:None,
+        subscribe_player_teleports=lambda:teleports,unsubscribe_player_teleports=Mock(),
+        _raise_if_failed=lambda:None,_raknet=SimpleNamespace(_send_queue=asyncio.Queue()))
+    world=SimpleNamespace(session=session,name='bot',send=AsyncMock(),_verification_chunk=(0,0))
+    p=SimpleNamespace(commands=[1],structure=SimpleNamespace(name='fixture'))
+    job={'state':'placing','submitted':0}
+    async with GameConsole(world,p,job,enabled=True) as game:
+        teleports.put_nowait(dict(position=(1,80,1),importer_move=False));await asyncio.sleep(0)
+        assert game.events.empty()
+        job.update(state='awaiting_action',delivery_complete=True)
+        teleports.put_nowait(dict(position=(1,80,1),importer_move=True));await asyncio.sleep(0)
+        assert game.events.empty()
+        for pos in ((1,80,1),(-.5,81,-16.5)):
+            teleports.put_nowait(dict(position=pos,importer_move=False))
+        await asyncio.sleep(0)
+        assert game.events.qsize()==1
+        assert await game.next_action()==('repair_here',(-.5,81,-16.5))
+        assert world._verification_chunk is None
+        job.update(state='repairing',local_repair_active=True)
+        teleports.put_nowait(dict(position=(32,80,32),importer_move=False))
+        await asyncio.sleep(0)
+        assert await game.next_action()==('repair_here',(32,80,32))
+    session.unsubscribe_player_teleports.assert_called_once()
+
+
+async def test_local_action_only_rechecks_local_nbt_and_preserves_global_cursors(tmp_path,monkeypatch):
+    import proloader.importer as module
+    import proloader.command_block_delivery as delivery
+    import proloader.differential_repair as differential
+    from proloader.command_blocks import CommandBlockData
+    from proloader.block_entities import BlockEntityData
+    p=plan(tmp_path)
+    def cb(pos):return CommandBlockData(pos,'minecraft:command_block',{},'say test','',True,False,False,0,False)
+    def chest(pos):return BlockEntityData(pos,'minecraft:chest',{},'container',{'slots':27,'items':[]})
+    local=(-84,78,352);other=(-60,78,352)
+    p.command_blocks=[cb(local),cb(other)];p.block_entities=[chest(local),chest(other)]
+    calls=[];closed=[];actions=iter([('repair_here',(-84,79,352)),('done','player')])
+    session=SimpleNamespace(_raise_if_failed=lambda:None,read_subchunk=AsyncMock(),
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):
+        yield session,'bot';closed.append(True)
+    class World:
+        def __init__(self,*a):self.name='bot';self.session=session
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):pass
+        async def place(self,*a,**kw):pass
+    class Console:
+        def __init__(self,*a,**kw):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*a):pass
+        async def notice(self,*a):pass
+        async def next_action(self):return next(actions)
+    async def cb_stage(ops,s,w,dim,job,*a):
+        if job.get('command_blocks_next',0)<len(ops):calls.append(('cb',[o.position for o in ops]))
+        job['command_blocks_next']=len(ops)
+    async def other_stage(ops,s,w,dim,job,*a):
+        if job.get('block_entities_next',0)<len(ops):calls.append(('other',[o.position for o in ops]))
+        job['block_entities_next']=len(ops)
+    repair=AsyncMock(return_value=True)
+    monkeypatch.setattr(module,'rental_session',connect);monkeypatch.setattr(module,'WorldCommands',World)
+    monkeypatch.setattr(module,'GameConsole',Console)
+    monkeypatch.setattr(delivery,'stage_command_blocks',cb_stage)
+    monkeypatch.setattr(module,'apply_block_entities',other_stage)
+    monkeypatch.setattr(differential,'repair_building',repair)
+    result=await execute_import(p,None,SimpleNamespace(id='fixture'),'server','',verify='none',
+        stay_online=True,live_console=True,jobs_root=tmp_path/'jobs',command_block_mode='stage')
+    assert calls==[('cb',[local,other]),('other',[local,other]),('cb',[local]),('other',[local])]
+    assert result['command_blocks_next']==result['block_entities_next']==2
+    assert result['local_repair_data']['command_blocks_next']==result['local_repair_data']['block_entities_next']==1
+    assert repair.call_args.kwargs['chunk']==(-6,22)
+    assert closed and result['local_repair_status']=='verified'
+
+
 def test_measured_speed_eta_and_rollback(monkeypatch):
     import proloader.game_ui as module
     now=[0.];monkeypatch.setattr(module.time,'monotonic',lambda:now[0])
@@ -256,3 +333,38 @@ async def test_failed_console_entry_cleans_up_tasks_and_subscription():
     with pytest.raises(BedrockLoginError):
         async with game:raise AssertionError('entry must not succeed')
     assert unsubscribed==[queue] and all(task.done() for task in game.tasks)
+
+
+@pytest.mark.parametrize('stage,counter,total,label',[
+ ('verifying','checked',100,'世界校验'),
+ ('command_block_data','command_blocks_next',77,'命令方块NBT'),
+ ('command_block_repair','command_blocks_next',77,'命令方块修复'),
+ ('block_entity_data','block_entities_next',82,'容器/告示牌NBT'),
+])
+def test_hud_reports_current_phase_instead_of_completed_placement(stage,counter,total,label):
+    p=SimpleNamespace(commands=[None]*500,block_count=100,structure=SimpleNamespace(name='冰河禁区'))
+    j=dict(state=stage,submitted=500,verify_mode='complete',verification_total=100,
+           plan=dict(command_blocks=77,block_entities=82),phase_telemetry=dict(rate=10,eta_seconds=5))
+    j[counter]=12
+    text=hud(p,j)
+    assert label in text and f'12 / {total}' in text and '500 / 500' not in text
+
+
+async def test_game_panel_refreshes_every_half_second(monkeypatch):
+    import proloader.game_ui as module
+    delays=[]
+    async def sleep(seconds):delays.append(seconds);raise asyncio.CancelledError()
+    monkeypatch.setattr(module.asyncio,'sleep',sleep)
+    session=SimpleNamespace(_raknet=SimpleNamespace(_send_queue=asyncio.Queue()))
+    w=SimpleNamespace(session=session,send=AsyncMock())
+    p=SimpleNamespace(commands=[1],structure=SimpleNamespace(name='fixture'))
+    game=GameConsole(w,p,dict(state='placing',submitted=0))
+    with pytest.raises(asyncio.CancelledError):await game._panel()
+    assert len(delays)==1 and .45<=delays[0]<=.5
+    assert 'titleraw @a actionbar' in w.send.call_args.args[0]
+
+
+def test_hud_keeps_unsupported_nbt_visible_after_supported_data_is_verified():
+    p=SimpleNamespace(commands=[1],structure=SimpleNamespace(name='fixture'))
+    text=hud(p,dict(state='awaiting_action',submitted=1,plan=dict(unsupported_block_entities=4),block_entities_state='readback_verified'))
+    assert '未支持NBT：4' in text

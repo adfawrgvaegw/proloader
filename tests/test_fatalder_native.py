@@ -77,3 +77,88 @@ def test_file_backed_exact_palette_keeps_new_names_and_states(tmp_path):
     assert len(commands)==1
     assert commands[0][7:]==(state.name,state.states)
     validate_coverage(structure,(130,77,-483),commands)
+
+
+def test_nemc_normal_stone_slabs_preserve_material_and_geometry():
+    from proloader.block_names import command_state
+    for name in ('minecraft:stone_block_slab4','minecraft:double_stone_block_slab4'):
+        states={'minecraft:vertical_half':'top','stone_slab_type_4':'stone'}
+        expected='minecraft:normal_stone_'+('double_slab' if name.startswith('minecraft:double_') else 'slab')
+        assert command_state(name,states)==(expected,{'minecraft:vertical_half':'top'})
+    assert command_state('minecraft:quartz_block',{'chisel_type':'smooth','pillar_axis':'y'})==(
+        'minecraft:smooth_quartz',{'pillar_axis':'y'})
+
+
+def test_bdx_literal_supports_and_in_memory_exact_states_are_preserved():
+    palette=BlockPalette()
+    support=palette.add(Block(BlockState('minecraft:structure_void',{'structure_void_type':'air'})))
+    carpet=palette.add(Block(BlockState('minecraft:gray_carpet')))
+    furnace=palette.add(Block(BlockState('minecraft:furnace',{'minecraft:cardinal_direction':'north'})))
+    blocks=np.array([support,carpet,furnace],dtype=np.uint32).reshape(1,3,1)
+    structure=Structure('bdx',(1,3,1),palette,Region(palette,blocks),
+        source_info={'source_format':'BDX','exact_states':True})
+    commands=native_plan(structure,(0,80,0),native_binary())
+    validate_coverage(structure,(0,80,0),commands)
+    assert commands[0][7]=='minecraft:structure_void'
+    assert commands[-1][7]=='minecraft:gray_carpet'
+    assert next(c for c in commands if c[7]=='minecraft:furnace')[8]=={'minecraft:cardinal_direction':'north'}
+
+
+def test_scattered_supports_are_merged_without_air_widening_or_window_thrash():
+    palette=BlockPalette()
+    support=palette.add(Block(BlockState('minecraft:structure_void',{'structure_void_type':'air'})))
+    carpet=palette.add(Block(BlockState('minecraft:gray_carpet')))
+    stone=palette.add(Block(BlockState('minecraft:stone')))
+    blocks=np.zeros((100,3,100),dtype=np.uint32)
+    # X-major source traversal used to bounce between Z windows every row.
+    blocks[:,0,:]=support
+    blocks[1,0,20]=0  # A deliberate source gap may never be filled.
+    blocks[:,1,:]=carpet
+    blocks[:,2,:]=stone
+    s=Structure('scattered',(100,3,100),palette,Region(palette,blocks),
+        source_info={'source_format':'BDX','exact_states':True})
+    origin=(-19,80,37)
+    commands=native_plan(s,origin,native_binary())
+    validate_coverage(s,origin,commands)
+    visits=[]
+    for c in commands:
+        key=((c[1]-origin[0])//48,(c[3]-origin[2])//48)
+        if not visits or visits[-1]!=key:visits.append(key)
+        assert (c[4]-origin[0])//48==key[0] and (c[6]-origin[2])//48==key[1]
+    assert len(visits)<=18  # Nine groups, structure pass then attachment pass.
+    assert visits[:3]==[(0,0),(1,0),(2,0)]
+    assert visits[3:6]==[(2,1),(1,1),(0,1)]
+    assert sum(c[7]=='minecraft:structure_void' for c in commands)<400
+    first_carpet=next(i for i,c in enumerate(commands) if c[7]=='minecraft:gray_carpet')
+    assert all(c[7]=='minecraft:gray_carpet' for c in commands[first_carpet:])
+
+
+async def test_live_wall_hash_is_resolved_without_accepting_other_materials():
+    from types import SimpleNamespace
+    from proloader.importer import WorldCommands
+    palette=BlockPalette()
+    props=dict(wall_block_type='cobblestone',wall_connection_type_east='none',wall_connection_type_north='none',
+               wall_connection_type_south='none',wall_connection_type_west='none',wall_post_bit=True)
+    wall=palette.add(Block(BlockState('minecraft:cobblestone_wall',props)))
+    blocks=np.full((1,1,1),wall,dtype=np.uint32)
+    s=Structure('wall',(1,1,1),palette,Region(palette,blocks))
+    hashes=await WorldCommands(None,'bot',SimpleNamespace(structure=s)).runtime_hashes()
+    ids=hashes[json.dumps(['minecraft:cobblestone_wall',props],sort_keys=True)]
+    assert 3867560979 in ids  # Live east/west tall join, post disabled.
+    assert 3690217760 not in ids  # Air never passes the wall material check.
+
+
+async def test_bdx_paired_door_uses_lower_orientation_and_repairs_duplicate_lower_flag():
+    from types import SimpleNamespace
+    from proloader.importer import WorldCommands
+    from proloader.block_names import cell_states
+    palette=BlockPalette()
+    lower=palette.add(Block(BlockState('minecraft:warped_door',dict(direction=3,door_hinge_bit=False,open_bit=False,upper_block_bit=False))))
+    upper=palette.add(Block(BlockState('minecraft:warped_door',dict(direction=0,door_hinge_bit=False,open_bit=False,upper_block_bit=False))))
+    blocks=np.array([lower,upper],dtype=np.uint32).reshape(1,2,1)
+    s=Structure('door',(1,2,1),palette,Region(palette,blocks),source_info={'source_format':'BDX'})
+    expected=cell_states(s,(0,1,0))
+    assert expected['upper_block_bit'] and expected['direction']==3
+    assert not palette.get(upper).state.states['upper_block_bit']
+    hashes=await WorldCommands(None,'bot',SimpleNamespace(structure=s)).runtime_hashes()
+    assert 3808820045 in hashes[json.dumps(['minecraft:warped_door',expected],sort_keys=True)]

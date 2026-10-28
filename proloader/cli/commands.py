@@ -11,7 +11,7 @@ import time
 
 from proloader.bots import BotStore
 from proloader.cli import ui
-from proloader.importer import prepare_import,execute_import,HeightLimitError
+from proloader.importer import prepare_import,execute_import,HeightLimitError,same_plan
 
 JOBS=Path.home()/'.proloader'/'imports'
 
@@ -55,8 +55,9 @@ def resume_plan(job):
     saved=job['plan']
     if not saved.get('plan_sha256') or not saved.get('wire_revision'):
         raise ValueError('这是旧版施工计划，无法安全沿用断点。请用原文件和坐标新建导入。')
-    plan=prepare_import(saved['file'],tuple(saved['origin']),saved['dimension'],engine=saved['engine'])
-    if plan.summary()!=saved:
+    plan=prepare_import(saved['file'],tuple(saved['origin']),saved['dimension'],engine=saved['engine'],
+                        block_replacements=saved.get('block_replacements',()))
+    if not same_plan(saved,plan.summary()):
         raise ValueError('建筑文件或施工计划已变化，不能按旧下标续传。请新建导入。')
     return plan
 
@@ -67,7 +68,7 @@ def display_plan(plan,rate=None,verify=None):
         ('建筑',summary['name']),('起点',', '.join(map(str,summary['origin']))),
         ('终点',', '.join(map(str,summary['end']))),('维度',summary['dimension']),
         ('目标方块',f"{summary['blocks']:,}"),('命令',f"{summary['commands']:,}"),
-        ('发送速率',f'{rate}/秒' if rate else '尚未连接'),('校验',verify or '离线预检'),
+        ('发送上限',f'{rate}/秒' if rate else '尚未连接'),('校验',verify or '离线预检'),
         ('覆盖方式','覆盖建筑非空气目标；保留空白处原有内容')]))
     for warning in summary['warnings']:ui.notice('兼容性说明',warning,'warning')
 
@@ -132,7 +133,7 @@ async def run_import(args,store,bot,plan,server,secret,rate,verify,resume=None):
             last_check[:]=[job.get('checked',0),time.monotonic()]
     job=await execute_import(plan,store,bot,server,secret,verify=verify,
                              commands_per_second=rate,progress=progress,resume=resume,live_console=True,
-                             stay_online=not getattr(args,'exit_after_send',False),reconnect_attempts=5,
+                             stay_online=not getattr(args,'exit_after_send',False),reconnect_attempts=0,
                              command_block_mode=getattr(args,'command_blocks',None) or 'reject')
     if args.json:emit(dict(event='result',**job))
     else:
@@ -203,7 +204,7 @@ from proloader.cli.health import doctor
 
 
 def print_error(exc,as_json=False):
-    safe=isinstance(exc,(ValueError,FileNotFoundError)) or exc.__class__.__name__ in ('PlacementCheckError','RentalError','ParseError','UnsupportedFormatError','BedrockLoginError','BedrockDisconnectedError')
+    safe=isinstance(exc,(ValueError,FileNotFoundError)) or exc.__class__.__name__ in ('PlacementCheckError','RentalError','ParseError','UnsupportedFormatError','BedrockLoginError','BedrockDisconnectedError','CommandUnconfirmedError')
     message=str(exc)[:400] if safe else f'操作未完成（{type(exc).__name__}）；请用 tasks 查看已保存的任务。'
     if as_json:emit(dict(event='error',error=type(exc).__name__,message=message,
                         **({'details':exc.details} if isinstance(exc,HeightLimitError) else {})))

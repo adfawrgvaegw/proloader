@@ -137,11 +137,9 @@ def tests(root,folder):
 
 
 def network_digest(root):
-    digest=hashlib.sha256()
-    paths=sorted((root/'proloader/net').rglob('*.py'))+[root/'tools/diagnostics/verify_rental_stability.py',root/'proloader/bots.py']
-    for path in paths:
-        digest.update(str(path.relative_to(root)).encode());digest.update(path.read_bytes())
-    return digest.hexdigest()
+    # Compare the identical file set and path convention as the online report.
+    from tools.diagnostics.verify_rental_stability import source_digest
+    return source_digest(root)
 
 
 def acceptance(root,folder,settings,password):

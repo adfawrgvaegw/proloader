@@ -170,24 +170,17 @@ class ImportProgress:
 
     def render(self):
         j=self.job
-        verifying=j['state']=='verifying' or (j['state']=='loading' and j['submitted']==len(self.plan.commands))
-        total=self.block_count if j.get('verify_mode')=='complete' else min(64,self.block_count)
-        repairing=j['state']=='repairing' or j.get('manual_repair_in_progress',False)
-        nbt=j['state']=='command_block_data' or (j.get('command_blocks_state')=='staging' and j['state']=='loading')
-        repair=j.get('repair_rounds',[{}])[-1] if j.get('repair_rounds') else {}
-        if j.get('manual_repair_in_progress'):
-            repair=dict(sent=j.get('manual_repair_submitted',0),commands=len(self.plan.commands))
-        reading=j.get('repair_telemetry',{}) if j.get('manual_repair_in_progress') else j.get('telemetry',{})
-        self.bar.update(self.task,description='命令方块数据' if nbt else ('补齐' if repairing else ('核对' if verifying else '发送')),
-                        completed=j.get('command_blocks_next',0) if nbt else (repair.get('sent',0) if repairing else (j['checked'] if verifying else j['submitted'])),
-                        total=j.get('plan',{}).get('command_blocks',0) if nbt else (repair.get('commands',0) if repairing else (total if verifying else len(self.plan.commands))))
+        from proloader.game_ui import phase_progress
+        phase=phase_progress(self.plan,j)
+        reading=j.get('phase_telemetry',j.get('telemetry',{}))
+        self.bar.update(self.task,description=phase['label'],completed=phase['done'],total=phase['total'])
         return Group(*chrome('建筑正在落地'),Panel(Group(
             Text(self.plan.structure.name,style='bold #edf5f1'),Text(''),
             pairs([('当前步骤',j.get('detail','准备中')),('目标位置',', '.join(map(str,self.plan.origin))),
                    ('已运行',f'{int(time.monotonic()-self.started)//60:02}:{int(time.monotonic()-self.started)%60:02}'),
                    ('世界校验',f"{j['passed']} / {j['checked']} 通过" if j['checked'] else '等待执行'),
                    ('待补齐记录',str(len(j.get('repair_pending',{})))),
-                   ('实测速率',f"{reading.get('rate',0):,.1f} 条/秒"),
+                   ('实测速率',f"{reading.get('rate',0):,.1f} {phase['unit']}/秒"),
                    ('预计剩余',duration(reading.get('eta_seconds'))),
                    ('发送上限',f"{j.get('speed',{}).get('rate',4000):,} 条/秒")]),
             Text(''),self.bar),border_style=ACCENT,padding=(1,2),box=box.ROUNDED),

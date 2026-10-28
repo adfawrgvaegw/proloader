@@ -67,7 +67,7 @@ def build_parser():
 
 
 def _plan_options(parser):
-    parser.add_argument('file',type=Path,help='.schem / .schematic / .mcstructure / .mcworld 文件')
+    parser.add_argument('file',type=Path,help='.bdx / .schem / .schematic / .mcstructure / .mcworld 文件')
     parser.add_argument('--to',type=coordinates,required=True,help='建筑最小坐标，例如 1200,78,1000；负数用 --to=-85,78,351')
     parser.add_argument('--dimension',choices=('overworld','nether','the_end'),default='overworld')
     parser.add_argument('--engine',choices=('fatalder','legacy'),default='fatalder',help='默认Fatalder原生规划')

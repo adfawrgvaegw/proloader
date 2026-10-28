@@ -45,6 +45,7 @@ def test_real_import_dispatch_passes_password_in_memory_and_does_not_echo(tmp_pa
         asyncio.set_event_loop(previous)
     assert executed.call_args.args[4]=='PRIVATE-PASSWORD'
     assert executed.call_args.kwargs['commands_per_second']==4000
+    assert executed.call_args.kwargs['reconnect_attempts']==0
     output=capsys.readouterr().out
     assert 'PRIVATE-PASSWORD' not in output and 'PRIVATE-SESSION' not in output
     assert json.loads(output.splitlines()[-1])['event']=='result'
@@ -65,6 +66,8 @@ def test_resume_uses_saved_target_and_rejects_changed_fingerprint(tmp_path,monke
     job=dict(state='failed',plan=dict(file='fixture',origin=[1,2,3],dimension='overworld',engine='fatalder',plan_sha256='a',wire_revision='v'))
     monkeypatch.setattr(commands,'prepare_import',lambda *a,**k:SimpleNamespace(summary=lambda:dict(job['plan'])))
     assert commands.resume_plan(job).summary()==job['plan']
+    monkeypatch.setattr(commands,'prepare_import',lambda *a,**k:SimpleNamespace(summary=lambda:dict(job['plan'],warnings=['updated explanation'])))
+    assert commands.resume_plan(job).summary()['warnings']==['updated explanation']
     monkeypatch.setattr(commands,'prepare_import',lambda *a,**k:SimpleNamespace(summary=lambda:dict(job['plan'],plan_sha256='different')))
     with pytest.raises(ValueError,match='已变化'):commands.resume_plan(job)
     with pytest.raises(ValueError,match='旧版'):commands.resume_plan(dict(state='failed',plan={}))

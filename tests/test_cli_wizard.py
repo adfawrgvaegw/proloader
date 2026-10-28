@@ -72,3 +72,17 @@ def test_placement_error_shows_coordinate_and_block(monkeypatch):
     wizard.show_error(PlacementCheckError(448,('setblock',125,110,-96,125,110,-96,'minecraft:stonebrick',{'stone_brick_type':'cracked'})))
     assert '125 110 -96' in seen[0][1]
     assert 'cracked_stone_bricks' in seen[0][1]
+
+
+async def test_wizard_import_does_not_retry_connection_automatically(monkeypatch):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+    from proloader.cli import wizard
+    monkeypatch.setattr(wizard.ui,'ImportProgress',lambda p:SimpleNamespace(render=lambda:'progress'))
+    monkeypatch.setattr(wizard.ui.console,'clear',lambda:None)
+    monkeypatch.setattr(wizard,'Live',lambda *a,**k:nullcontext(SimpleNamespace(update=lambda *a:None)))
+    execute=AsyncMock(return_value={'state':'sent'})
+    monkeypatch.setattr(wizard,'execute_import',execute)
+    await wizard.perform(None,None,None,'server','SECRET','none')
+    assert execute.call_args.kwargs['reconnect_attempts']==0

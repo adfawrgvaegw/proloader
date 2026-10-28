@@ -38,6 +38,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from proloader.block_names import command_state
 from proloader.config import STORAGE_ROOT, ControlConfig, CookieData, save_last_server
 from proloader.model.block import Block, BlockState
 from proloader.model.palette import BlockPalette
@@ -498,7 +499,7 @@ class Control:
 def load_any_structure(file_path: str) -> Structure:
     """根据后缀自动选择解析器。
 
-    支持：.mcstructure（基岩原生 NBT）、.schem（Sponge v2/v3）、.schematic（MCEdit Alpha / Sponge）
+    支持：.bdx（BDX）、.mcstructure（基岩原生 NBT）、.schem（Sponge v2/v3）、.schematic（MCEdit Alpha / Sponge）
     """
     p = Path(file_path)
     if not p.exists():
@@ -511,7 +512,7 @@ def load_any_structure(file_path: str) -> Structure:
         from proloader.parser.mcstructure import parse_mcstructure_bytes
         return parse_mcstructure_bytes(raw, name=p.stem)
 
-    if suffix in ('.schem', '.schematic'):
+    if suffix in ('.bdx', '.schem', '.schematic'):
         from proloader.parser import load_structure
         return load_structure(p)
 
@@ -744,15 +745,16 @@ class BuildTask:
             if i < 0:
                 break
             cmd = commands[i]
-            _, wx1, wy1, wz1, _, _, _, name, _ = cmd
+            _, wx1, wy1, wz1, _, _, _, name, name_states = cmd
 
             dx, dy, dz = wx1 - ox, wy1 - oy, wz1 - oz
             def _r(d): return "~" if d == 0 else f"~{d}"
             rel = f"{_r(dx)} {_r(dy)} {_r(dz)}"
 
             try:
+                probe_name, _ = command_state(name, name_states, probe=True)
                 r = await bedrock.run_command_ai(
-                    f"testforblock {rel} {name} []",
+                    f"testforblock {rel} {probe_name} []",
                     timeout=6.0, dimensional=bool(bot_name), bot_name=bot_name,
                 )
                 if r is not None:

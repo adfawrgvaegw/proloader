@@ -4,6 +4,7 @@
     - .mcstructure 基岩版原生 NBT
     - .schem Sponge v2/v3
     - .schematic MCEdit Alpha（旧版数字ID）及Sponge改后缀文件
+    - .bdx BDX 建筑（Fatalder bdump 解码器）
     - .mcworld 基岩版世界包
 """
 
@@ -17,6 +18,7 @@ from proloader.parser.mcstructure import parse_mcstructure_bytes, write_mcstruct
 import proloader.parser.mcstructure  # noqa: F401
 import proloader.parser.sponge  # noqa: F401
 import proloader.parser.schematic  # noqa: F401
+import proloader.parser.bdx  # noqa: F401
 
 __all__ = [
     "load_structure",

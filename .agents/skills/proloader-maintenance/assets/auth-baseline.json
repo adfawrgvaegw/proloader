@@ -1,8 +1,8 @@
 {
   "modules": {
-    "8bbfa2c7_d6367fb9.pyc": "3fd6702944be7b4b3ac7125caa1dddbac52cb6e151f4aba9452db0bddc15cdb8",
-    "94b92985_d94c8a8c.pyc": "cf06bdcbedcdea820990a253cfbabd33ac39f5b425832eec706b4cf3cfbae022",
-    "94b92985_12e0e8fc.pyc": "af708698ccd7c4d94ea9314b790bfa3941adeb9e523c72ad29a0c4fb7ecafba3"
+    "8bbfa2c7_d6367fb9.pyc": "87fcd2b587553317e4264866b39529de8c49779237c72b697cff36cbe1f56bd8",
+    "94b92985_d94c8a8c.pyc": "342d15d0b56887f5b8941438eedff69cfccb64aa252924c2f2857488407cc658",
+    "94b92985_12e0e8fc.pyc": "9d5d8676dd52ace80c877d922dabc38447ae198f9861551e81b5dccbb1515ab2"
   },
   "methods": {
     "OnLoginWebServer": "2cba7b01c3450973a39e87e2415adc125e31ffd6552cd3361c5dd2a1797cd7aa",
@@ -12,10 +12,12 @@
   },
   "target_execution": false,
   "engine": "3.9.15.297907",
-  "patch": "3.9.42.301055",
-  "resources_hash": "65ce57607cdb2f70a040a1db7149279d",
-  "mcp_md5": "df454a7e8eafe3482d3749b0aab21a49",
-  "mcp_sha256": "8ac54e5d82c6cfea42ad63acd2873870c36beb905d0a7c8eae2ce033ebaabd33",
+  "patch": "3.9.43.301387",
+  "resources_hash": "6427513f3429fbc2409cde2da8f5b905",
+  "mcp_md5": "50b9d7ebb64bd0fa4bce39934b7dd0d1",
+  "mcp_sha256": "61b6fa8d41d7d4fb8c9cf2364e60b8a2dbdc2ae1e2b343799374485d27d9178b",
   "rn_present": false,
-  "recipe": "same-engine-entire-selected-modules-v1"
+  "recipe": "same-engine-selected-modules-manually-reviewed-3943-v2",
+  "review": "docs/ACCEPTANCE_20261028.md",
+  "dynamic_check_template": "574eef18e0deb853d397c1344b805f513565623c9393c07511450b288bf8912a"
 }

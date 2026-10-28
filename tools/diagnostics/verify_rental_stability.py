@@ -17,14 +17,18 @@ from proloader.bots import BotStore, private_json
 from proloader.net.netease.runtime import rental_session
 
 
-def source_digest():
+def source_digest(root=None):
+    root = Path(root) if root is not None else Path.cwd()
     digest = hashlib.sha256()
-    paths = sorted(Path('proloader').rglob('*.py')) + [Path(__file__)]
-    native = Path('third_party/fatalder')
+    paths = sorted((root/'proloader').rglob('*.py')) + [root/'tools/diagnostics/verify_rental_stability.py']
+    native = root/'third_party/fatalder'
     paths += sorted((native/'cmd/proloader-nbt').glob('*.go'))
     paths += [native/'go.mod', native/'go.sum']
-    for path in paths:
-        digest.update(str(path).encode())
+    paths += sorted((root/'tools/mcpcheck').rglob('*.go'))
+    paths += [root/'tools/mcpcheck/go.mod',root/'tools/mcpcheck/UPSTREAM.json',
+              root/'tools/mcp_reverse/vmu/nls_cipher.py']
+    for path in sorted(set(paths)):
+        digest.update(str(path.relative_to(root)).encode())
         digest.update(path.read_bytes())
     return digest.hexdigest()
 

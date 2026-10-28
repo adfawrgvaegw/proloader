@@ -59,3 +59,101 @@ async def test_check_window_bounds_concurrency_and_drains_cancelled_tasks():
     w.send.side_effect=send
     assert await check_window(w,points(256))==[True]*256
     assert maximum==8 and active==0
+
+
+async def test_chunk_verification_reads_once_and_falls_back_for_unknown_and_negative():
+    from proloader.verification import check_subchunk
+    w=world();ids=[9]*4096;ids[1]=999;ids[2]=10
+    w.plan=SimpleNamespace(dimension='overworld')
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(return_value=dict(blocks=ids,palette={
+        '9':dict(name='minecraft:stone',states={}), '10':dict(name='minecraft:dirt',states={})})))
+    w.send.side_effect=BedrockLoginError('aiCommand 执行失败')
+    w.check.side_effect=lambda x,y,z,*args:z!=2
+    assert await check_subchunk(w,points(4))==[True,True,False,True]
+    assert w.session.read_subchunk.call_count==1 and w.check.call_count==1
+
+
+async def test_subchunk_error_retries_only_reads_and_never_counts_as_match():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld')
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(side_effect=asyncio.TimeoutError),_raise_if_failed=lambda:None)
+    w.send.side_effect=BedrockLoginError('aiCommand 执行失败')
+    w.check.return_value=False
+    assert await check_subchunk(w,points(2))==[False,False]
+    assert w.session.read_subchunk.call_count==3
+    assert w.check.call_count==2
+
+
+async def test_all_air_cube_is_a_proven_difference_without_command_probes():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld')
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(return_value=dict(result=6)))
+    assert await check_subchunk(w,points(16))==[False]*16
+    w.check.assert_not_called();w.send.assert_not_called()
+
+
+async def test_unknown_runtime_id_can_match_exact_upstream_source_hash():
+    import json
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld')
+    w.runtime_hashes=AsyncMock(return_value={json.dumps(['minecraft:stone',{}],sort_keys=True):{98765}})
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(return_value=dict(blocks=[98765]*4096,palette={})))
+    assert await check_subchunk(w,points(16))==[True]*16
+    w.check.assert_not_called();w.send.assert_not_called()
+
+
+async def test_scan_prefetch_reuses_only_current_horizontal_chunk():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld',origin=(0,0,0),structure=SimpleNamespace(size=(32,32,16)))
+    w._scan_subchunks={}
+    def entries(*a,**kw):return [dict(offset=[0,y,0],result=6) for y in (0,1)]
+    w.session=SimpleNamespace(read_subchunks=AsyncMock(side_effect=entries))
+    assert await check_subchunk(w,[(0,0,0,'minecraft:stone',{})])==[False]
+    assert await check_subchunk(w,[(0,16,0,'minecraft:stone',{})])==[False]
+    assert w.session.read_subchunks.call_count==1
+    await check_subchunk(w,[(16,0,0,'minecraft:stone',{})])
+    assert w.session.read_subchunks.call_count==2
+    assert set(w._scan_subchunks)=={(1,0,0),(1,1,0)}
+
+
+async def test_exact_bdx_states_do_not_pass_a_wrong_furnace_direction():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld',structure=SimpleNamespace(source_info={'exact_states':True}))
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(return_value=dict(blocks=[9]*4096,palette={
+        '9':dict(name='minecraft:furnace',states={'minecraft:cardinal_direction':'south','custom_appearance':0})})))
+    assert await check_subchunk(w,[(0,0,0,'minecraft:furnace',{'minecraft:cardinal_direction':'north'})])==[False]
+    assert await check_subchunk(w,[(0,0,0,'minecraft:furnace',{'minecraft:cardinal_direction':'south'})])==[True]
+    w.send.assert_not_called()
+
+
+async def test_exact_source_fallback_group_keeps_requested_states():
+    w=world();w.plan=SimpleNamespace(structure=SimpleNamespace(source_info={'exact_states':True}))
+    p=[(0,0,z,'minecraft:furnace',{'minecraft:cardinal_direction':'north'}) for z in range(2)]
+    assert await check_group(w,p)==[True,True]
+    assert w.send.call_args.args[0].count('"minecraft:cardinal_direction"="north"')==2
+
+
+async def test_mixed_height_prefetch_preserves_good_cube_and_probes_unavailable_one():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld',origin=(0,0,0),structure=SimpleNamespace(size=(16,32,16)))
+    w._scan_subchunks={}
+    w.session=SimpleNamespace(read_subchunks=AsyncMock(return_value=[
+        dict(offset=[0,0,0],result=1,blocks=[9]*4096,palette={'9':dict(name='minecraft:stone',states={})}),
+        dict(offset=[0,1,0],result=2,blocks=[9]*4096,palette={'9':dict(name='minecraft:stone',states={})})]))
+    assert await check_subchunk(w,[(0,0,0,'minecraft:stone',{})])==[True]
+    w.check.return_value=False
+    assert await check_subchunk(w,[(0,16,0,'minecraft:stone',{})])==[False]
+    assert w.session.read_subchunks.await_count==1
+    assert w.session.read_subchunks.call_args.kwargs['allow_partial']
+    w.check.assert_awaited_once()
+
+
+async def test_wall_joins_are_derived_but_materials_and_furnace_direction_remain_required():
+    from proloader.verification import check_subchunk
+    w=world();w.plan=SimpleNamespace(dimension='overworld',structure=SimpleNamespace(source_info={'exact_states':True}))
+    w.session=SimpleNamespace(read_subchunk=AsyncMock(return_value=dict(blocks=[9]*4096,palette={
+        '9':dict(name='minecraft:cobblestone_wall',states={'wall_connection_type_east':'tall','wall_post_bit':False})})))
+    p=[(0,0,0,'minecraft:cobblestone_wall',{'wall_block_type':'cobblestone','wall_connection_type_east':'none','wall_post_bit':True})]
+    assert await check_subchunk(w,p)==[True]
+    w.session.read_subchunk.return_value['palette']['9']['name']='minecraft:polished_deepslate_wall'
+    assert await check_subchunk(w,p)==[False]

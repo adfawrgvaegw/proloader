@@ -73,6 +73,8 @@ async def test_initialization_order_and_distinct_entity_ids(protocol):
         received.append(pid)
         if pid == 11:
             return start_game_prefix()
+        if pid == 70:
+            return b'\x46\x0a'  # Server accepted radius 5 (signed VarInt).
         if pid == 2:
             # 直到 PLAYER_SPAWN 到达之前，不能发生成确认或附加事件。
             assert [session._read_packet_id(p)[0] for p in sent] == [8, 8, 69]
@@ -82,6 +84,7 @@ async def test_initialization_order_and_distinct_entity_ids(protocol):
     game = await session.initialize_game()
     assert received == [6, 7, 11, 70, 2]
     assert game == StartGameData(-12345, 98765, 1, '')
+    assert session._chunk_radius == 5
     assert [session._read_packet_id(p)[0] for p in sent] == [8, 8, 69, 113, 129, 203] + [200] * 7
     assert sent[:2] == [b'\x08\x03\x00\x00', b'\x08\x04\x00\x00']
     assert sent[2] == (b'\x45\x20\x00' if protocol == 686 else b'\x45\x08\x40')

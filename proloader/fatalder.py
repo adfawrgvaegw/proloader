@@ -11,6 +11,13 @@ FRAGILE = ('torch','ladder','button','lever','banner','flower','sapling','carpet
 PROPERTY = re.compile(r'("(?:[^"\\]|\\.)*")=("(?:[^"\\]|\\.)*"|true|false|-?\d+)')
 
 
+def skipped_names(structure):
+    skipped={'minecraft:air','minecraft:structure_block'}
+    if structure.source_info.get('source_format')!='BDX':
+        skipped.add('minecraft:structure_void')
+    return skipped
+
+
 def parse_command(text):
     parts=text.split(' ',8 if text.startswith('fill ') else 5)
     fill=parts[0]=='fill'
@@ -32,7 +39,8 @@ def parse_command(text):
 
 def native_plan(structure, origin, binary):
     palette=[dict(name=b.state.name,states=b.state.states) for b in structure.palette]
-    request=dict(size=structure.size,origin=origin,palette=palette)
+    request=dict(size=structure.size,origin=origin,palette=palette,
+                 exact_states=bool(structure.source_info.get('exact_states')))
     if structure.source_info.get('blocks_file'):
         request['blocks_file']=structure.source_info['blocks_file']
         request['exact_states']=bool(structure.source_info.get('exact_states'))
@@ -44,21 +52,58 @@ def native_plan(structure, origin, binary):
     payload=json.loads(result.stdout)
     batches=payload['batches']
     commands=[]
+    # Upstream treats structure_void as a placeholder. BDX stores literal
+    # supports here, so restore those source cells before attached blocks.
+    if 'minecraft:structure_void' not in skipped_names(structure):
+        import numpy as np
+        for bid,b in enumerate(structure.palette):
+            if b.state.name!='minecraft:structure_void':continue
+            # Merge source-only Z runs, bounded by the same 48-block groups as
+            # chunk_fill. Never fill across a source air cell or group boundary.
+            cells=np.argwhere(structure.region.blocks==bid)
+            start=None;end=None
+            def emit():
+                if start is None:return
+                x,y,z=(int(v)+o for v,o in zip(start,origin))
+                ez=int(end[2])+origin[2]
+                commands.append(('fill' if ez!=z else 'setblock',x,y,z,x,y,ez,b.state.name,b.state.states))
+            for cell in cells:
+                cell=tuple(map(int,cell))
+                if (end is None or cell[:2]!=end[:2] or cell[2]!=end[2]+1
+                        or cell[2]//48!=end[2]//48):
+                    emit();start=cell
+                end=cell
+            emit()
     for fragile in (False,True):
         for batch in batches:
             selected=[parse_command(c) for c in batch['commands']]
             selected=[c for c in selected if any(s in c[7] for s in FRAGILE)==fragile]
             selected.sort(key=lambda c:(c[2],c[1],c[3]))
             commands.extend(selected)
+    # Build complete spatial groups like BuildTask instead of visiting the
+    # entire building once per material. Keep a global attachment pass so
+    # attachments at a group edge also have their neighbouring supports ready.
+    def order(c):
+        gx,gz=(c[1]-origin[0])//48,(c[3]-origin[2])//48
+        tx,tz=gx//3,gz//3
+        fragile=any(s in c[7] for s in FRAGILE)
+        support=c[7]=='minecraft:structure_void'
+        return (fragile,tz,tx if tz%2==0 else -tx,
+                gz,gx if gz%2==0 else -gx,not support,c[2],c[1],c[3])
+    commands.sort(key=order)
     # Reject any native widening, air overwrite, duplicate, or invalid volume before connecting.
-    validate_coverage(structure,origin,commands,payload['palette'])
+    canonical=payload['palette']
+    for i,b in enumerate(structure.palette):
+        if b.state.name not in skipped_names(structure) and b.state.name=='minecraft:structure_void':
+            canonical[i]=dict(name=b.state.name,states=b.state.states)
+    validate_coverage(structure,origin,commands,canonical)
     return commands
 
 
 def validate_coverage(structure,origin,commands,canonical=None):
     import numpy as np
     seen=np.zeros(structure.size,dtype=bool)
-    skipped={'minecraft:air','minecraft:structure_void','minecraft:structure_block'}
+    skipped=skipped_names(structure)
     for c in commands:
         _,x,y,z,ex,ey,ez,name,states=c
         lo=[x-origin[0],y-origin[1],z-origin[2]]
@@ -96,8 +141,8 @@ def native_binary(target='plan'):
     version=digest.hexdigest()
     if not binary.exists() or not stamp.exists() or json.loads(stamp.read_text()).get('source_sha256')!=version:
         binary.parent.mkdir(exist_ok=True)
-        result=subprocess.run(['go','build','-o',str(binary),f'./cmd/proloader-{target}'],cwd=source,
-                              text=True,capture_output=True,timeout=240,env=go_build_environment())
+        result=subprocess.run(['go','build','-o',str(binary),f'./cmd/proloader-{target}'],cwd=source,env=go_build_environment(),
+                              text=True,capture_output=True,timeout=240)
         if result.returncode:raise RuntimeError('Fatalder原生引擎编译失败：'+result.stderr[:500])
         stamp.write_text(json.dumps(dict(source_sha256=version)))
     return binary

@@ -322,6 +322,7 @@ class RakNetSession:
         # ── 心跳/重传任务 ────────────────────────────────────────
         self._tasks: List[asyncio.Task] = []
         self._closed = False
+        self.close_reason = None
         self._stop_started = False
         self._boot_time = time.monotonic()
 
@@ -358,7 +359,7 @@ class RakNetSession:
                 await asyncio.sleep(0.1)  # 给点时间发出去
         except Exception:
             pass
-        self._closed = True
+        self._terminate('local_stop')
         tasks = [t for t in self._tasks if t is not asyncio.current_task()]
         for t in tasks:
             t.cancel()
@@ -426,6 +427,8 @@ class RakNetSession:
         共享同一 order_index（同一有序消息）+ split_id。接收方按 split_id 重组。
         每个分片放进独立 FrameSet，保证单 UDP 包不超过 MTU。
         """
+        if self._closed:
+            raise ConnectionError('RakNet transport is closed')
         # 单帧 body 上限 = MTU - FrameSet头(4) - Frame头
         # Frame头 = 1(flags) + 2(body_length) + [3 if reliable] + [3 if sequenced] + [4 if ordered]
         # 协商 MTU 包括 IPv4/UDP 头；对齐参考 effectiveMTU()。
@@ -495,7 +498,19 @@ class RakNetSession:
     # ──────────────────────────────────────────────────────────────
     async def recv(self) -> bytes:
         """收一个已保序重组的帧 body（Block 直到有数据）。"""
-        return await self._inbox.get()
+        if self._closed and self._inbox.empty():
+            raise ConnectionError('RakNet transport is closed')
+        body = await self._inbox.get()
+        if body is None:
+            raise ConnectionError('RakNet transport is closed')
+        return body
+
+    def _terminate(self, reason):
+        if not getattr(self, 'close_reason', None):
+            self.close_reason = reason
+        if not self._closed:
+            self._closed = True
+            self._inbox.put_nowait(None)
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 后台循环
@@ -508,6 +523,7 @@ class RakNetSession:
             except (OSError, socket.error) as e:
                 if not self._closed:
                     logger.warning("recv socket 异常 (%s)，退出收包循环", e)
+                    self._terminate('socket_error')
                 break
             if not data:
                 continue
@@ -533,7 +549,7 @@ class RakNetSession:
             self._handle_frame_set(data)
         elif pid == OnlinePacketID.DISCONNECTION_NOTIFICATION:
             logger.info("服务端发来 DisconnectionNotification，断开")
-            self._closed = True
+            self._terminate('peer_disconnect')
         else:
             logger.debug("未处理的在线包 0x%02x", pid)
 
@@ -550,7 +566,7 @@ class RakNetSession:
         distance = (seq - self._recv_sequence) & 0xFFFFFF
         if distance < 0x800000:
             if distance > 4096:
-                self._closed = True
+                self._terminate('receive_window_exceeded')
                 return
             now = time.monotonic()
             for missing in range(distance):
@@ -657,7 +673,7 @@ class RakNetSession:
             except Exception:
                 logger.debug("ConnectedPong 解析失败")
         elif pid == OnlinePacketID.DISCONNECTION_NOTIFICATION:
-            self._closed = True
+            self._terminate('peer_disconnect')
 
     # ── ACK/NACK 处理 ────────────────────────────────────────────
     def _handle_ack(self, data: bytes) -> None:

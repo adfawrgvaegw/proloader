@@ -6,7 +6,7 @@ from collections import deque
 from contextlib import asynccontextmanager
 
 from proloader.bots import BotStore, BotProfile
-from .client import NeteaseClient, RentalServerEntity
+from .client import NeteaseClient, RentalServerEntity, RentalWorldPending, RentalWorldEnterError
 from .pe_profiles import PEMetadataMismatchError, PEAuthenticationError
 import requests
 from proloader.net.bedrock.crypto import generate_keypair, serialize_public_key_b64
@@ -20,6 +20,40 @@ class RentalError(RuntimeError):
         self.stage, self.code, self.reason = stage, code, reason
         super().__init__(f'{stage}失败' + (f'（网易错误码 {code}）' if type(code) is int else '')
                          + (f'：{reason}' if reason else ''))
+
+
+async def _enter_world(client, server_id, password, stage, event, *, wait_seconds=60):
+    """Poll only an explicitly starting world, within one identity lease.
+
+    HTTP failures/rejections do not cause credential refresh or a second game
+    connection. Each request retains its existing bounded HTTP timeout.
+    """
+    deadline = time.monotonic() + wait_seconds
+    while True:
+        try:
+            try:
+                endpoint = await asyncio.to_thread(client.enter_rental_server_world, server_id, password)
+            finally:
+                status = getattr(client, '_last_world_enter_status', None)
+                if isinstance(status,dict):event('world_enter_response', **status)
+            return endpoint
+        except RentalWorldPending as exc:
+            event('world_starting', state=exc.state, progress=exc.progress, total=exc.total)
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RentalError('等待租赁服启动', reason='服务器尚未返回游戏地址，已停止等待；身份和断点保留') from None
+            progress = f'（{exc.progress}/{exc.total}）' if exc.progress is not None and exc.total else ''
+            stage('等待租赁服启动' + progress)
+            await asyncio.sleep(min(2, remaining))
+        except RentalWorldEnterError as exc:
+            raise RentalError('进入租赁服', exc.code, reason='服务器未提供有效游戏地址') from None
+        except requests.Timeout:
+            raise RentalError('进入租赁服', reason='地址请求超时') from None
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            raise RentalError('进入租赁服', reason=f'地址服务HTTP错误 {status}') from None
+        except requests.ConnectionError:
+            raise RentalError('进入租赁服', reason='无法连接地址服务') from None
 
 
 def _refresh(client, store, bot):
@@ -95,7 +129,7 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
 
         def _dispatch_packet(self, packet):
             pid, _ = self._read_packet_id(packet)
-            if pid in (2, 3, 6, 7, 11, 70, 143):
+            if pid in (2, 3, 5, 6, 7, 11, 70, 143):
                 data = dict(packet_id=pid)
                 if pid == 2:
                     from proloader.net.bedrock.login import parse_play_status
@@ -112,6 +146,8 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
     try:
         stage('检查机器人身份')
         await asyncio.to_thread(client.bootstrap, engine_source='official-download')
+        from .mcp_check import binary as mcp_check_binary
+        await asyncio.to_thread(mcp_check_binary)
         pe = store.pe(bot)
         if pe and pe.get('metadata', {}).get('engine_version') == client.engine_version and pe.get('metadata', {}).get('patch_version') == client.g79_latest_version:
             grant = pe['credentials']
@@ -136,11 +172,8 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
         entity = result['entities'][0]
         server = RentalServerEntity(str(entity['entity_id']), str(entity.get('owner_id', '')),
                                     int(entity.get('min_level', 0) or 0))
-        stage('验证服务器密码')
-        try:
-            host, port = await asyncio.to_thread(client.enter_rental_server_world, server.entity_id, password)
-        except Exception:
-            raise RentalError('进入租赁服，请检查编号与密码') from None
+        stage('获取租赁服游戏地址')
+        host, port = await _enter_world(client, server.entity_id, password, stage, event)
         stage('准备游戏认证')
         await asyncio.to_thread(client.connect_link_and_send_game_start, server_code, server)
         key = generate_keypair()
@@ -155,6 +188,9 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
         event('raknet_online')
         bedrock = ObservedBedrock(raknet, netease_mode=True, netease_jwt_chain=chain,
                                  netease_uid=int(client.user_id), netease_protocol=860, priv_key=key)
+        bedrock._netease_engine_version = client.engine_version
+        bedrock._netease_patch_version = client.g79_latest_version
+        bedrock._diagnostic_event = event
         stage('完成加密登录')
         await bedrock.login(f'{host}:{port}', timeout=20)
         stage('加载世界与校验协议')
@@ -170,6 +206,9 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
         detail = dict(error_type=type(exc).__name__)
         if isinstance(exc, BedrockDisconnectedError):
             detail['reason'] = exc.reason
+        elif isinstance(exc, RentalError):
+            detail['stage'] = exc.stage
+            if type(exc.code) is int:detail['code'] = exc.code
         elif isinstance(exc, BedrockLoginError):
             # These locally generated errors have stage labels; no JWT/server free text.
             text = str(exc)
@@ -183,6 +222,7 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
             if raknet:
                 event('transport_summary', pending=len(raknet._pending_acks),
                       queued=raknet._send_queue.qsize(), closed=raknet._closed,
+                      close_reason=getattr(raknet, 'close_reason', None),
                       accepted=raknet._accepted is not None,
                       pending_frames=[dict(index=k, size=len(v.frame.body), order=v.frame.order_index,
                                            age_s=round(time.monotonic()-v.send_time,3))

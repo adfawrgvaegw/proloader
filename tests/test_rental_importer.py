@@ -159,8 +159,153 @@ async def test_no_verification_sends_every_command_and_reports_sent_not_verified
     assert job['submitted']==len(p.commands)
     assert placements[1:]==p.commands
     assert processing_barriers.count('testfor @s') >= 3
+    assert all('commandblocksenabled' not in command for command in processing_barriers)
     assert job['checked']==0 and job['verification']=='not_performed'
     assert 'private-password' not in next((tmp_path/'jobs').glob('*.json')).read_text()
+
+
+async def test_checked_pipeline_overlaps_responses_but_keeps_failed_batch_for_repair(tmp_path,monkeypatch):
+    import proloader.importer as module
+    gate=asyncio.Event();placements=[];checks=[0];failed_at=[]
+    session=SimpleNamespace(_raise_if_failed=lambda:None,
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):yield session,'bot'
+    class World:
+        def __init__(self,*a):pass
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):pass
+        async def place(self,c,**kw):
+            placements.append(c)
+            if len(placements)>=65:gate.set()
+        async def check(self,*a):
+            checks[0]+=1
+            if checks[0]==2:
+                # A synchronous batch checker would deadlock here at 32.
+                await asyncio.wait_for(gate.wait(),2)
+                failed_at.append(len(placements))
+                return False
+            return True
+    monkeypatch.setattr(module,'rental_session',connect)
+    monkeypatch.setattr(module,'WorldCommands',World)
+    p=plan(tmp_path);p.commands*=64
+    result=await execute_import(p,None,SimpleNamespace(id='fixture'),'server','',
+        verify='sample',jobs_root=tmp_path/'jobs')
+    assert failed_at and failed_at[0]>=65
+    assert result['mismatches_detected']==32
+    assert not result['repair_pending'] and result['state']=='completed'
+    assert result['checked_processing_window']==module.CHECKED_PROCESSING_LIMIT
+    assert result['metrics']['max_processing_window']<=module.CHECKED_PROCESSING_LIMIT
+
+
+async def test_checked_pipeline_stops_at_durable_bound_when_all_responses_stall(tmp_path,monkeypatch):
+    import proloader.importer as module
+    gate=asyncio.Event();placements=[];checks=[0]
+    session=SimpleNamespace(_raise_if_failed=lambda:None,
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):yield session,'bot'
+    class World:
+        def __init__(self,*a):pass
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):pass
+        async def place(self,c,**kw):placements.append(c)
+        async def check(self,*a):
+            checks[0]+=1
+            if checks[0]>1:await gate.wait()
+            return True
+    monkeypatch.setattr(module,'rental_session',connect)
+    monkeypatch.setattr(module,'WorldCommands',World)
+    p=plan(tmp_path);p.commands*=512
+    task=asyncio.create_task(execute_import(p,None,SimpleNamespace(id='fixture'),'server','',
+        verify='sample',jobs_root=tmp_path/'jobs'))
+    limit=module.CHECKED_PROCESSING_LIMIT
+    try:
+        deadline=asyncio.get_running_loop().time()+3
+        while len(placements)<limit+1 and asyncio.get_running_loop().time()<deadline:
+            await asyncio.sleep(.001)
+        await asyncio.sleep(.01)
+        assert len(placements)==limit+1  # Includes the separate first probe.
+        saved=json.loads(next((tmp_path/'jobs').glob('*.json')).read_text())
+        assert saved['submitted']==limit and saved['checked_processing_window']==limit
+        gate.set()
+        result=await asyncio.wait_for(task,3)
+        assert result['state']=='completed' and not result['repair_pending']
+        assert result['metrics']['max_processing_window']==limit
+    finally:
+        gate.set()
+        if not task.done():task.cancel()
+        await asyncio.gather(task,return_exceptions=True)
+
+
+@pytest.mark.parametrize('verify',['none','sample'])
+async def test_covered_main_layer_never_teleports_and_uses_one_area(tmp_path,monkeypatch,verify):
+    import proloader.importer as module
+    p=plan(tmp_path)
+    palette=BlockPalette();stone=palette.add(Block(BlockState('minecraft:stone')))
+    p.structure=Structure('three-groups',(100,1,1),palette,
+        Region(palette,np.full((100,1,1),stone,dtype=np.uint32)))
+    p.origin=(0,80,0)
+    p.commands=[('fill',x,80,0,min(x+47,99),80,0,'minecraft:stone',{}) for x in (0,48,96)]
+    moves=[];sent=[]
+    session=SimpleNamespace(_raise_if_failed=lambda:None,read_chunk_window=AsyncMock(return_value=[]),
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):yield session,'bot'
+    class World(module.WorldCommands):
+        async def send(self,command,**kw):sent.append(command);return ''
+        async def teleport(self,*position):moves.append(position)
+    monkeypatch.setattr(module,'rental_session',connect)
+    monkeypatch.setattr(module,'WorldCommands',World)
+    result=await execute_import(p,None,SimpleNamespace(id='fixture'),'server','',
+        verify=verify,jobs_root=tmp_path/'jobs')
+    assert result['submitted']==3 and result['state']==('sent' if verify=='none' else 'completed')
+    assert moves==[]
+    assert session.read_chunk_window.await_count==0
+    assert result['loaded_windows']==1 and 'loading_area_pending' not in result
+    assert result['loading_strategy']=='stationary_tickingarea_100'
+
+
+async def test_sample_checks_reload_each_source_slice_without_teleporting(tmp_path,monkeypatch):
+    import proloader.importer as module
+    p=plan(tmp_path)
+    palette=BlockPalette();stone=palette.add(Block(BlockState('minecraft:stone')))
+    cells=np.zeros((300,1,300),dtype=np.uint32)
+    for x in (0,200):
+        for z in (0,200):cells[x,0,z]=stone
+    p.structure=Structure('four-slices',(300,1,300),palette,Region(palette,cells))
+    p.origin=(0,80,0)
+    p.commands=[('setblock',x,80,z,x,80,z,'minecraft:stone',{}) for x in (0,200) for z in (0,200)]
+    session=SimpleNamespace(_raise_if_failed=lambda:None,read_chunk_window=AsyncMock(),
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):yield session,'bot'
+    class World(module.WorldCommands):
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):raise AssertionError('remote sample must not move')
+    monkeypatch.setattr(module,'rental_session',connect)
+    monkeypatch.setattr(module,'WorldCommands',World)
+    result=await execute_import(p,None,SimpleNamespace(id='fixture'),'server','',
+        verify='sample',jobs_root=tmp_path/'jobs')
+    assert result['checked']==result['passed']==4
+    assert result['loaded_windows']==8  # Four construction slices, four fresh samples.
+    assert not result.get('loading_area_pending') and not result['repair_pending']
+
+
+async def test_changed_schedule_cannot_reuse_old_cursor_or_connect(tmp_path,monkeypatch):
+    import proloader.importer as module
+    from proloader.bots import private_json
+    p=plan(tmp_path);task='c'*32;root=tmp_path/'jobs'
+    previous=p.summary();previous['plan_sha256']='old-order'
+    original=dict(id=task,plan=previous,server='server',bot_id='fixture',submitted=1)
+    private_json(root/f'{task}.json',original)
+    connect=AsyncMock(side_effect=AssertionError('must reject before login'))
+    monkeypatch.setattr(module,'rental_session',connect)
+    with pytest.raises(ValueError,match='不能沿用旧命令下标'):
+        await execute_import(p,None,SimpleNamespace(id='fixture'),'server','',
+            verify='none',resume=task,jobs_root=root)
+    connect.assert_not_called()
+    assert json.loads((root/f'{task}.json').read_text())==original
 
 
 def test_bot_identity_deduplicates_and_keeps_credentials_private(tmp_path):
@@ -281,6 +426,20 @@ def test_stonebrick_split_preserves_variant_and_input(variant,modern):
     assert command_state('minecraft:stonebrick',{'stone_brick_type':'unknown'})==('minecraft:stonebrick',{'stone_brick_type':'unknown'})
 
 
+def test_light_block_probe_maps_to_level_name_and_write_keeps_states():
+    from proloader.block_names import command_state
+    states={'block_light_level':15}
+    # Probe (verification) must use the per-level id the server stores.
+    assert command_state('minecraft:light_block',states,probe=True)==('minecraft:light_block_15',{})
+    # Writes keep the modern states form so the light level survives placement.
+    assert command_state('minecraft:light_block',states)==('minecraft:light_block',{'block_light_level':15})
+    assert states=={'block_light_level':15}
+    # Unknown level value stays unmapped rather than guessed.
+    assert command_state('minecraft:light_block',{'block_light_level':'x'},probe=True)==('minecraft:light_block',{'block_light_level':'x'})
+    # light_block without level states is untouched in both modes.
+    assert command_state('minecraft:light_block',None,probe=True)==('minecraft:light_block',{})
+
+
 async def test_interrupted_repair_retains_pending_and_resumes(tmp_path,monkeypatch):
     import proloader.importer as module
     placements=[]
@@ -372,3 +531,106 @@ async def test_processing_barrier_failure_is_bounded(tmp_path,monkeypatch):
     with pytest.raises(BedrockLoginError,match='3次只读确认'):
         await WorldCommands(session,'bot',plan(tmp_path)).send('testfor @s')
     assert session.run_command_ai.call_count==3
+
+
+async def test_confirmed_teleport_moves_relative_command_frame(tmp_path,monkeypatch):
+    import proloader.importer as module
+    async def no_delay(*a):pass
+    monkeypatch.setattr(module.asyncio,'sleep',no_delay)
+    session=SimpleNamespace(_raise_if_failed=lambda:None,run_command_ai=AsyncMock(return_value=''))
+    w=WorldCommands(session,'bot',plan(tmp_path))
+    await w.teleport(12027,118,12267)
+    await w.check(12027,117,12267,'minecraft:chain_command_block')
+    command=session.run_command_ai.call_args.args[0]
+    assert 'positioned 12027 118 12267' in command
+    assert 'testforblock ~ ~-1 ~' in command
+
+
+async def test_real_bulk_repair_path_reuses_source_fills_and_rechecks_affected_cubes(tmp_path,monkeypatch):
+    import proloader.importer as module
+    from proloader.bots import private_json
+    p=plan(tmp_path);bot=SimpleNamespace(id='fixture');task='b'*32;root=tmp_path/'jobs'
+    expected={tuple(int(c[i])+p.origin[i] for i in range(3)) for c in np.argwhere(p.structure.region.blocks)}
+    missing=tuple(p.commands[0][1:4]);actual=expected-{missing};writes=[];reads=[]
+    async def cubes(pos,dim,heights,timeout=8,**kwargs):
+        reads.append((pos,list(heights)));entries=[]
+        for ytile in heights:
+            ids=[0]*4096
+            for x,y,z in actual:
+                if x//16==pos[0]//16 and z//16==pos[2]//16 and y//16==ytile:
+                    ids[((x%16)*16+y%16)*16+z%16]=1
+            entries.append(dict(offset=[0,ytile,0],result=1,blocks=ids,palette={
+                '0':dict(name='minecraft:air',states={}), '1':dict(name='minecraft:stone',states={})}))
+        return entries
+    session=SimpleNamespace(read_subchunks=cubes,read_subchunk=AsyncMock(),_raise_if_failed=lambda:None,
+        _raknet=SimpleNamespace(_closed=False,_send_queue=asyncio.Queue(),_pending_acks={}))
+    @asynccontextmanager
+    async def connect(*a,**kw):yield session,'bot'
+    class World(module.WorldCommands):
+        async def send(self,*a,**kw):return ''
+        async def teleport(self,*a):pass
+        async def place(self,c,**kw):
+            writes.append(c)
+            for x in range(c[1],c[4]+1):
+                for y in range(c[2],c[5]+1):
+                    for z in range(c[3],c[6]+1):actual.add((x,y,z))
+    monkeypatch.setattr(module,'rental_session',connect);monkeypatch.setattr(module,'WorldCommands',World)
+    private_json(root/f'{task}.json',dict(id=task,plan=p.summary(),server='server',bot_id=bot.id,
+        state='sent',submitted=len(p.commands),checked=0,passed=0,verify_mode='complete',placement_finished_seconds=1))
+    result=await execute_import(p,None,bot,'server','',verify='complete',resume=task,jobs_root=root)
+    assert result['state']=='completed' and result['checked']==result['passed']==len(expected)
+    assert not result['repair_pending'] and actual==expected
+    assert writes==[p.commands[0]]  # One merged source fill, not a whole-building replay.
+    assert result['repair_rounds'][0]['differences']==1 and reads
+
+
+def test_approved_coordinate_replacements_survive_resume_without_changing_source(tmp_path,monkeypatch):
+    import proloader.importer as module
+    from proloader.cli.commands import resume_plan
+    source=tmp_path/'approved.mcstructure';source.write_bytes(b'unchanged source')
+    monkeypatch.setattr(module,'load_structure',lambda file:structure())
+    replacements=[dict(local=[0,0,0],from_name='minecraft:stone',name='minecraft:white_concrete')]
+    original=prepare_import(source,(0,80,0),engine='legacy')
+    adjusted=prepare_import(source,(0,80,0),engine='legacy',block_replacements=replacements)
+    assert source.read_bytes()==b'unchanged source'
+    assert adjusted.structure.palette.get(int(adjusted.structure.region.blocks[0,0,0])).state.name=='minecraft:white_concrete'
+    assert adjusted.structure.palette.get(int(adjusted.structure.region.blocks[1,0,0])).state.name=='minecraft:stone'
+    assert original.summary()['plan_sha256']!=adjusted.summary()['plan_sha256']
+    assert resume_plan(dict(state='failed',plan=adjusted.summary())).summary()==adjusted.summary()
+    with pytest.raises(ValueError,match='不符'):
+        prepare_import(source,(0,80,0),engine='legacy',block_replacements=[dict(replacements[0],local=[0,1,0])])
+
+
+def test_approved_profiles_require_exact_file_hash_and_do_not_migrate_legacy_resumes(tmp_path,monkeypatch):
+    import hashlib
+    import proloader.importer as module
+    source=tmp_path/'same-name.mcstructure';source.write_bytes(b'approved exact source')
+    profile=tmp_path/'profiles.json'
+    profile.write_text(json.dumps({hashlib.sha256(source.read_bytes()).hexdigest():[
+        dict(local=[0,0,0],from_name='minecraft:stone',name='minecraft:white_concrete')]}))
+    monkeypatch.setattr(module,'APPROVED_REPLACEMENTS',profile)
+    monkeypatch.setattr(module,'load_structure',lambda file:structure())
+    approved=prepare_import(source,(0,80,0),engine='legacy')
+    assert len(approved.summary()['block_replacements'])==1
+    legacy=prepare_import(source,(0,80,0),engine='legacy',block_replacements=())
+    assert 'block_replacements' not in legacy.summary()
+    source.write_bytes(b'different source, same name')
+    assert 'block_replacements' not in prepare_import(source,(0,80,0),engine='legacy').summary()
+
+
+async def test_confirmed_external_teleport_invalidates_verification_location_marker(monkeypatch):
+    import proloader.importer as module
+    monkeypatch.setattr(module.asyncio,'sleep',AsyncMock())
+    w=WorldCommands(None,'bot',SimpleNamespace(dimension='overworld'))
+    w.send=AsyncMock(return_value='');w._verification_chunk=(1,2)
+    await w.teleport(100,80,100)
+    assert w._command_origin==(100,80,100) and w._verification_chunk is None
+
+
+async def test_new_external_teleport_blocks_old_local_writes_and_importer_moves():
+    w=WorldCommands(SimpleNamespace(),'bot',SimpleNamespace())
+    w.send=AsyncMock();w._active_local_repair_revision=1;w._external_teleport_revision=2
+    with pytest.raises(ValueError,match='新的传送'):
+        await w.place(('setblock',0,80,0,0,80,0,'minecraft:stone',{}))
+    with pytest.raises(ValueError,match='新的传送'):await w.teleport(0,80,0)
+    w.send.assert_not_awaited()

@@ -9,9 +9,11 @@ import base64
 import hashlib
 import json
 import subprocess
+from proloader.native_build import go_build_environment
+from functools import lru_cache
+from pathlib import Path
 
 from proloader.errors import ParseError
-from proloader.fatalder import native_binary
 from proloader.net.bedrock.command_block import build_command_block_update
 from proloader.net.bedrock.packets import unwrap_packet
 
@@ -92,6 +94,12 @@ def plan_command_blocks(structure, origin):
             block.state.name, states, command, name, not _bit(nbt, 'auto'),
             conditional, _bit(nbt, 'TrackOutput', 1), delay, _bit(nbt, 'ExecuteOnFirstTick'),
             'java' if java else 'bedrock'))
+    # Keep each owned 48-block loading window together, then each actual cube.
+    # Source X/Y/Z order otherwise repeatedly unloads/reloads distant Z rows.
+    result.sort(key=lambda b: (
+        (b.position[2]-origin[2])//48,
+        ((b.position[0]-origin[0])//48) * (1 if (b.position[2]-origin[2])//48%2==0 else -1),
+        b.position[0]//16,b.position[2]//16,b.position[1]//16,b.position))
     return result
 
 
@@ -100,11 +108,28 @@ def operation_hash(operations):
         ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+@lru_cache(maxsize=1)
+def world_reader_binary():
+    root = Path(__file__).resolve().parents[1]
+    source = root / 'tools/worldreader'
+    digest = hashlib.sha256()
+    for path in sorted(source.iterdir()):
+        if path.suffix == '.go' or path.name in ('go.mod', 'go.sum'):
+            digest.update(path.name.encode()); digest.update(path.read_bytes())
+    upstream=root/'third_party/fatalder/modules/FunShuttler/core/minecraft'
+    for folder in ('protocol','nbt'):
+        for path in sorted((upstream/folder).rglob('*.go')):
+            digest.update(str(path.relative_to(upstream)).encode());digest.update(path.read_bytes())
+    binary = root / 'cache' / ('worldreader-' + digest.hexdigest()[:16])
+    if not binary.exists():
+        result = subprocess.run(['go', 'build', '-o', str(binary), '.'], cwd=source,env=go_build_environment(),
+                                capture_output=True, text=True, timeout=240)
+        if result.returncode:
+            raise ValueError('子区块读取器编译失败：' + result.stderr[:500])
+    return binary
+
+
 def decode_subchunk(packet):
     _, body = unwrap_packet(packet)
-    result = subprocess.run([str(native_binary('nbt'))], input=json.dumps(dict(
-        action='decode_subchunk', data=base64.b64encode(body).decode())),
-        capture_output=True, text=True, timeout=15)
-    if result.returncode:
-        raise ValueError('网易子区块NBT解码失败，未确认内部数据。')
-    return json.loads(result.stdout)
+    from proloader.world_codec import request
+    return request(world_reader_binary(),dict(action='decode_subchunk',data=base64.b64encode(body).decode()))
