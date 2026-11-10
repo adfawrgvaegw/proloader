@@ -117,12 +117,13 @@ def test_sign_legacy_and_modern_text_and_attributes():
         assert not operations and unsupported
 
 
-def test_real_sign_codecs_and_upstream_actor_profile_agreement():
+@pytest.mark.parametrize('protocol', [860, 898])
+def test_real_sign_codecs_and_upstream_actor_profile_agreement(protocol):
     op = sign()
-    packets = sign_packets(op,'sign_click',(101,81.62,-100))
+    packets = sign_packets(op,'sign_click',(101,81.62,-100),protocol=protocol)
     assert [unwrap_packet(p)[0] for p in packets] == [48,30]
-    assert unwrap_packet(sign_packets(op,'auth',(101,81.62,-100),123)[0])[0] == 144
-    packet, = sign_packets(op,'sign_text',(101,81.62,-100))
+    assert unwrap_packet(sign_packets(op,'auth',(101,81.62,-100),123,protocol=protocol)[0])[0] == 144
+    packet, = sign_packets(op,'sign_text',(101,81.62,-100),protocol=protocol)
     pid,body = unwrap_packet(packet)
     assert pid == 56
     reader = ByteReader(body)
@@ -191,13 +192,16 @@ async def test_container_delta_only_clears_stale_slots_and_waits_once():
     assert len(op.commands({'Items':[dict(Slot=1,Name='minecraft:stone',Count=1,tag={'custom':1})]}))==27
 
 
-async def test_sign_writer_reuses_session_and_orders_click_auth_text(monkeypatch):
+@pytest.mark.parametrize('protocol', [860, 898])
+async def test_sign_writer_reuses_session_and_orders_click_auth_text(monkeypatch,protocol):
     import proloader.block_entities as module
     events=[]
-    def packets(op,action,position,tick=0,protocol=860):
+    def packets(op,action,position,tick=0,protocol=None):
+        assert protocol == expected_protocol
         events.append((action,tick));return [action.encode()]
     monkeypatch.setattr(module,'sign_packets',packets)
-    session=SimpleNamespace(_netease_protocol=860,send_packet=AsyncMock())
+    expected_protocol=protocol
+    session=SimpleNamespace(_netease_protocol=protocol,send_packet=AsyncMock())
     world=SimpleNamespace(send=AsyncMock(),teleport=AsyncMock())
     for _ in range(2):await module.write_block_entity(sign(),world,session,'overworld')
     assert events == [('sign_click',0),('auth',1),('auth',2),('sign_text',0),

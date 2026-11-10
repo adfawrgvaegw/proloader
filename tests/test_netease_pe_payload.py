@@ -62,7 +62,7 @@ def test_official_download_does_not_trust_other_origin():
 def test_manifest_and_rn_failure_cannot_be_success_metadata():
     c=NeteaseClient();c.engine_version='3.9.15.297907'
     c._fetch_engine_version=Mock()
-    c._session.get=Mock(side_effect=[Mock(json=Mock(return_value={'android':['3.9.41.300665'],'urlNew':'https://example.test'})), Mock(content=b'not a zip')])
+    c._session.get=Mock(side_effect=[Mock(json=Mock(return_value={'android':['3.9.41.300665'],'urlNew':'https://example.test'})), Mock(content=b'not a zip'),Mock(content=b'not a zip'),Mock(content=b'not a zip')])
     with pytest.raises(ValueError,match='manifest'):c.bootstrap()
     assert c.g79_latest_version=='' and c.patch_resources_hash==''
     c._session.close()
@@ -96,3 +96,60 @@ def test_game_auth_requires_valid_credentials_and_clears_old_state(entity):
     with pytest.raises(RuntimeError,match='凭据'):c.authenticate_with_cookie(json.dumps({'sauth_json':json.dumps(sauth)}))
     assert c.user_id==c.user_token==''
     c._session.close()
+
+
+
+def manifest_zip():
+    import io, zipfile
+    data=io.BytesIO()
+    with zipfile.ZipFile(data, 'w') as archive:
+        archive.writestr('manifest.json', json.dumps({'assets':{'vanilla.mcp':{'md5':'a'*32}}}))
+    return data.getvalue()
+
+
+def test_public_manifest_transient_http_retry_has_no_auth_or_stale_fallback(monkeypatch):
+    import requests
+    from proloader.net.netease import client as module
+    monkeypatch.setattr(module.time, 'sleep', Mock())
+    c=NeteaseClient();bad=Mock(status_code=503);bad.raise_for_status.side_effect=requests.HTTPError('PRIVATE')
+    good=Mock(status_code=200,content=manifest_zip())
+    c._session.get=Mock(side_effect=[bad,good]);c._session.post=Mock()
+    try:
+        result=c._get_android_manifest('https://example.test/manifest.zip')
+        assert result['assets']['vanilla.mcp']['md5']=='a'*32
+        assert c._session.get.call_count==2 and len(c._metadata_retries)==1
+        assert c._metadata_retries[0]['http_status']==503
+        c._session.post.assert_not_called()
+        bad.close.assert_called_once()
+    finally:c._session.close()
+
+
+@pytest.mark.parametrize('status,attempts',[(404,1),(503,3)])
+def test_public_manifest_http_failure_is_bounded_and_safe(monkeypatch,status,attempts):
+    import requests
+    from proloader.net.netease import client as module
+    monkeypatch.setattr(module.time, 'sleep', Mock())
+    c=NeteaseClient();response=Mock(status_code=status)
+    response.raise_for_status.side_effect=requests.HTTPError('PRIVATE RESPONSE')
+    c._session.get=Mock(return_value=response)
+    try:
+        with pytest.raises(module.PublicMetadataError) as error:
+            c._get_android_manifest('https://example.test/manifest.zip')
+        assert c._session.get.call_count==attempts
+        assert error.value.http_status==status and error.value.attempts==attempts
+        assert 'PRIVATE' not in str(error.value)
+    finally:c._session.close()
+
+
+def test_public_manifest_invalid_json_is_not_accepted_or_retried(monkeypatch):
+    import io, zipfile
+    from proloader.net.netease import client as module
+    monkeypatch.setattr(module.time, 'sleep', Mock())
+    data=io.BytesIO()
+    with zipfile.ZipFile(data,'w') as archive:archive.writestr('manifest.json','not json')
+    c=NeteaseClient();c._session.get=Mock(return_value=Mock(status_code=200,content=data.getvalue()))
+    try:
+        with pytest.raises(module.PublicMetadataError,match='invalid_manifest'):
+            c._get_android_manifest('https://example.test/manifest.zip')
+        c._session.get.assert_called_once()
+    finally:c._session.close()

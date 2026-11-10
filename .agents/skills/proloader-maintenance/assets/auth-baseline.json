@@ -1,8 +1,8 @@
 {
   "modules": {
-    "8bbfa2c7_d6367fb9.pyc": "87fcd2b587553317e4264866b39529de8c49779237c72b697cff36cbe1f56bd8",
-    "94b92985_d94c8a8c.pyc": "342d15d0b56887f5b8941438eedff69cfccb64aa252924c2f2857488407cc658",
-    "94b92985_12e0e8fc.pyc": "9d5d8676dd52ace80c877d922dabc38447ae198f9861551e81b5dccbb1515ab2"
+    "8bbfa2c7_d6367fb9.pyc": "64b76c8d2a9c9491c8df13d24a865736c56703ad3a93ff2ae62174e8abcc7708",
+    "94b92985_d94c8a8c.pyc": "23e8da37c8658f37a13ae18b1d9b359054e240b8a0835d9924e07ff7454589b0",
+    "94b92985_12e0e8fc.pyc": "930cce3131d820c085bac3255dd66e140eb000bfdc109d5f5a4128d49a9aa97e"
   },
   "methods": {
     "OnLoginWebServer": "2cba7b01c3450973a39e87e2415adc125e31ffd6552cd3361c5dd2a1797cd7aa",
@@ -11,13 +11,23 @@
     "get_rnbundle_md5": "4501cc3b3b3c682a432138409d1df2eac70a39aeaf5a9d9cee6a2f53ab191c2b"
   },
   "target_execution": false,
-  "engine": "3.9.15.297907",
-  "patch": "3.9.43.301387",
-  "resources_hash": "6427513f3429fbc2409cde2da8f5b905",
-  "mcp_md5": "50b9d7ebb64bd0fa4bce39934b7dd0d1",
-  "mcp_sha256": "61b6fa8d41d7d4fb8c9cf2364e60b8a2dbdc2ae1e2b343799374485d27d9178b",
+  "engine": "3.10.5.301327",
+  "patch": "3.10.15.301976",
+  "resources_hash": "a72549110aa25aadee47980bcebdd9e6",
+  "mcp_md5": "64d96723f961a90c9b1ace553c5bb4e4",
+  "mcp_sha256": "275ba6bb1f55ad44a5bda76355f33b9dd425f35bb50dfe936563bcb19095b5ec",
   "rn_present": false,
-  "recipe": "same-engine-selected-modules-manually-reviewed-3943-v2",
-  "review": "docs/ACCEPTANCE_20261028.md",
-  "dynamic_check_template": "574eef18e0deb853d397c1344b805f513565623c9393c07511450b288bf8912a"
+  "recipe": "same-engine-selected-modules-manually-reviewed-31015-v1",
+  "review": "docs/MAINTENANCE_20261111.md",
+  "dynamic_check_template": "574eef18e0deb853d397c1344b805f513565623c9393c07511450b288bf8912a",
+  "native_library_md5": "393dfdf6f78831f80a7e6aa305b21227",
+  "native_library_sha256": "9644b5d4eba3862cfe51ad760da5dbc8d85cfd0423884a048ab2295da64040b8",
+  "native_signature_parameters": [
+    2,
+    8
+  ],
+  "pad_full_block": true,
+  "rental_protocol": 898,
+  "game_version": "1.21.130",
+  "native_reference": "docs/MAINTENANCE_20261103.md"
 }

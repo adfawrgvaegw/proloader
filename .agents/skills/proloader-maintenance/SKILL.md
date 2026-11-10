@@ -1,36 +1,53 @@
 ---
 name: proloader-maintenance
-description: Agent-operated Proloader maintenance after NetEase/Minecraft updates. Check official versions, prove compatible patches, configure exact metadata, test and validate connections; route changed authentication/protocols to focused analysis. Also maintain Fatalder integration and clean source exports.
+description: "Agent-operated Proloader maintenance after NetEase/Minecraft updates: official version discovery, exact authentication and protocol adaptation, static artifact analysis, offline regression and read-only live acceptance. Also supports requested Fatalder synchronization and sanitized source releases."
 ---
 
-# Proloader AI维护
+# Proloader 版本维护
 
-用户只需让AI读取本skill并提出维护需求，不需要运行终端命令或双击.command。AI负责执行、读取结果、按需分析适配并汇报；不要把下面的内部脚本命令当作操作步骤交还用户。本次若只要求编辑skill/交接，不启动在线维护。
+由 AI 执行维护、定位、适配、验收和记录。不要让用户代跑命令。只要求改 skill/交接时不连服。
 
-先遵守仓库AGENTS；本机HANDOFF只读顶部最新状态，不展开历史。接到实际版本维护任务后，由AI在项目根目录调用内部自动化入口：
+## 开始与完成标准
 
-```sh
-python3 .agents/skills/proloader-maintenance/scripts/maintain.py --online
-```
+1. 读仓库 AGENTS、当前维护记录和本 skill。本机存在`docs/HANDOFF.md`时读取顶部最新状态。保留 dirty 文件、原身份、建筑和旧任务；不要 reset。先确定本轮范围：版本适配默认包含已有授权服务器上的只读连接验收，不包含施工、重放任务、启用命令链、发布或改代理。
+2. 先运行内部入口，读取一行 JSON；失败状态是转入人工分析的路由，不是任务终点：
+   ```sh
+   python3 .agents/skills/proloader-maintenance/scripts/maintain.py --online
+   ```
+3. `current` 只说明官方精确配对已在配置中，不等于本轮重新验收。若用户要求排障/复验，使用 `--audit` 并按下方流程继续；无变化且没有复验需求则结束。
+4. 新版本必须完成：官方来源与摘要 → 静态差异审阅 → 精确配方 → 离线回归 → 一次60秒只读长连 → 同身份顺序10轮首次连接（每轮30秒、两次探针、0重连）→ socket/任务/租约清理 → 交接与过程记录。长连用于发现曾在31–44秒发生的动态校验断线，不由10轮短保持代替。
+5. 成功后才推进认证静态基线；失败保留证据并修复具体阶段，再开始新的固定源码验收序列。不能混合修复前后的成功轮次。存在未解决阻塞就明确说明最后成功阶段，不能把已配置称为已适配。
 
-只读stdout的一行JSON；大清单、源码和日志不进入上下文。没有变化即结束，不重复下载/测试/验收。
-脚本自动完成：正式源核对→校验MCP→三个认证模块静态指纹→精确配对配置→离线测试→10轮只读连接；失败回滚本次配置。已有灰度版本只报告，不自动切换。
+## 按状态继续
 
-## 按结果处理
+| 状态/原因 | 下一步 |
+|---|---|
+| `accepted` | 核对ONLINE、源码摘要及清理，再完成60秒长连与记录；脚本目前只内置10轮。 |
+| `current_verified` | 只完成静态核对；是否需要连接由本轮任务决定。 |
+| `needs_configuration` / `needs_password` | 读[自动化说明](references/automation.md)，复用本机身份和已授权服务器；密码仅stdin，不落盘。 |
+| `busy` | 查施工、共享常驻假人和租约；不能抢锁或并开同身份。活任务结束再继续。 |
+| `ready_to_apply` | 维护已授权则加`--online`执行，不重复询问。 |
+| `needs_analysis` / 新引擎 / 模块变化 | 按[完整适配手册](references/adaptation.md)分析；新引擎必须核对原生库、证书、签名参数和协议，不能只换版本号。 |
+| `rolled_back` / `error` / 超时 | 按[故障分流](references/troubleshooting.md)读最小日志，修复、测试，再回到验收。检查已回滚什么、PE是否已更新、进程是否仍在。 |
 
-- `current` / `current_verified` / `accepted`：报告结论与证据位置。
-- `needs_configuration` / `needs_password`：按[自动化说明](references/automation.md)补齐本机参数后重跑；密码仅stdin/隐藏输入，不写配置。
-- `busy`：已有施工或维护正在运行，先查状态，不能开第二连接或抢锁。
-- `ready_to_apply`：缺少在线验收选项，若用户授权版本维护，使用上面`--online`完成；不另问已授权事项。
-- `needs_analysis` / `rolled_back` / `error`：只读JSON列出的REPORT/NEXT和相关日志；按[自动化说明](references/automation.md)与[版本定位](references/version-updates.md)处理具体变化，修复后回到内部自动化入口。不把非零退出统一当程序崩溃。
+## 必须保持的约束
 
-同引擎只有**全部三个选定认证模块**语义指纹一致、RN/原生资源未变，才可自动增加精确patch/hash配对。新引擎或算法变化需要agent分析；不能删版本校验、混配3.9/3.10或伪造证据。脚本不执行下载的pyc。
+- 正式下载引擎、patch、资源hash、库hash和签名参数必须来自同一已审阅配方。灰度比例只是证据；不因存在灰度就切换，100%后仍核官方正式入口。
+- 同引擎仅当三个选定模块全部规范化指纹、四个认证方法一致，RN/overlay/原生资源条件满足时自动追加精确配对。新引擎即使Python方法相同也必须审阅原生调用。旧配方按引擎保留，拒绝跨引擎拼接。
+- downloaded pyc、MCP及服务端动态校验只静态解析，不执行。固定解析器来源、许可和摘要；未知模板停止于分析，不回退旧固定校验。
+- 真实游戏协议以当前 owning source 和握手证据为准；旧AGENTS或旧报告中的2168/686/860不能覆盖当前runtime配置。读取CURRENT_RENTAL_PROTOCOL及最新验收报告，不在skill固定当前协议号；升级必须核对对应GameVersion和wire格式。
+- Python唯一持有游戏连接；Fatalder原生助手不使用同身份另连。维护默认不写世界、不重发短信、不发布、不改系统网络。
+- 成功发送、PE成功、进入世界、长连、完整建筑/NBT验收是不同结论。只读维护不声称建筑验收通过。
+- 历史发送速率、窗口、等待和修复算法不固化在此skill。涉及这些改动才读取当前代码及最新专项交接，尤其不要恢复已移除的0.25秒等待或用旧游标接新计划。
 
-保留本机凭据和断点；已有身份优先复用，失败不靠重发短信解决。默认一键流程不写世界、不发布GitHub、不改系统代理。请求版本维护包含必要的只读连接验收，按已有服务器授权使用本机配置；配置文件本身不扩大授权。
+## 按需展开
 
-仅在任务涉及下列内容时展开相应资料：
+- [自动化入口、配置和证据文件](references/automation.md)：首次绑定、缺依赖、脚本行为和回滚边界。
+- [完整适配手册](references/adaptation.md)：从官方发现到新引擎原生分析、配方、动态MCP、协议和验收的完整操作路径。
+- [故障分流与收尾](references/troubleshooting.md)：下载、工具、PE、Link、地址启动、RakNet、spawn、延迟断线、回归失败与清理。
+- [代码定位](references/version-updates.md)：具体文件入口和协议易错点。
+- [本次完整案例](references/case-20261103.md)：3.9→3.10实际步骤、证据、失败与最终结果；不是未来版本可直接套用的参数。
+- Fatalder同步：核`third_party/fatalder-source.json`及组合许可，比较目标提交，重建受影响助手并跑对应测试；计划变化不沿旧下标续传。只在用户要求时同步上游。
+- [发布流程](references/releases.md)：仅用户要求发布时，另建干净目录，保留本机私有材料。组合许可AGPL-3.0-only，原MIT保留；不打包整个本机项目。
 
-- Fatalder同步：核对third_party/fatalder-source.json，重建原生助手，计划变化不能沿旧下标续传。Python是唯一游戏连接所有者。
-- 发送策略：用户选定默认4000条/秒、突发10；关闭方块校验/手动repair每256条异步探针、最多768条调度窗口，换区/结束前drain。探针未确认记录原批次并降速250；位置确认后等待0.25秒。开启方块校验保留32条批次检查。断点回退保存的完整窗口，禁止退回32条。
-- 建筑校验：差异记录→全量发送→最多两轮补齐；关闭校验时跳过检查/补齐，仍保留位置确认与处理背压。发送成功不是完整世界验收，NBT/次层液体缺口见MAINTAINERS。正常CLI默认留服等待玩家repair/done，repair重发全套主层命令；自动化可显式--exit-after-send。断线最多5次自动重连须单独披露，十轮首次连接验收不启用此恢复。
-- 开源发布：等用户要求的测试通过，按[发布流程](references/releases.md)另建干净目录，保留本机私有材料。组合许可AGPL-3.0-only；上传仍需用户授权。
+每次维护必须新增日期化过程文档，记录开始状态、来源/工具、决策依据、文件改动、每次失败、测试与排除项、实服轮次、摘要、回滚/凭据/租约状态；在HANDOFF顶部链接。敏感原始证据留cache，文档/skill不写Cookie、token、JWT、密码或私有响应正文。具体记录格式见故障分流末尾。

@@ -212,7 +212,7 @@ def validate_item_block(name, damage, encoded):
 
 
 def sign_packets(operation, action, player_position, tick=0, protocol=860):
-    if protocol!=860:raise ParseError('告示牌编辑仅支持已验证的网易860协议。')
+    if protocol not in (860,898):raise ParseError('告示牌编辑仅支持已审阅的网易860/898协议。')
     request = dict(action=action,protocol=protocol,position=operation.position,
         player_position=player_position,name=operation.block_name,states=operation.states,
         front=operation.data['FrontText'],back=operation.data['BackText'],tick=tick,
@@ -240,14 +240,14 @@ async def write_block_entity(operation, world, session, dimension, observed=None
             if pacer is not None:await pacer.wait()
             await world.send(f'execute in {dimension} run {command}',wait=False)
     else:
-        if getattr(session,'_netease_protocol',None)!=860:
+        if getattr(session,'_netease_protocol',None) not in (860,898):
             raise ValueError('告示牌写入尚未支持当前连接的协议。')
         x,y,z = operation.position
         await world.teleport(x+1,y,z)
         # Mirrors upstream sign.Make: empty the selected hand before clicking.
         await world.send('replaceitem entity @s slot.hotbar 0 minecraft:air 1 0')
         player = (x+1,y+1.62,z)
-        for packet in await asyncio.to_thread(sign_packets,operation,'sign_click',player):
+        for packet in await asyncio.to_thread(sign_packets,operation,'sign_click',player,protocol=session._netease_protocol):
             if guard is not None:guard()
             await session.send_packet(packet)
         for _ in range(2):
@@ -255,10 +255,10 @@ async def write_block_entity(operation, world, session, dimension, observed=None
             await world.send('testfor @s')
             tick = getattr(session,'_nbt_auth_tick',0)+1
             session._nbt_auth_tick = tick
-            for packet in await asyncio.to_thread(sign_packets,operation,'auth',player,tick):
+            for packet in await asyncio.to_thread(sign_packets,operation,'auth',player,tick,protocol=session._netease_protocol):
                 if guard is not None:guard()
                 await session.send_packet(packet)
-        for packet in await asyncio.to_thread(sign_packets,operation,'sign_text',player):
+        for packet in await asyncio.to_thread(sign_packets,operation,'sign_text',player,protocol=session._netease_protocol):
             if guard is not None:guard()
             await session.send_packet(packet)
     await world.send('testfor @s')

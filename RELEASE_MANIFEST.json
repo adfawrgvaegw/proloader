@@ -1,7 +1,7 @@
 {
   "files": {
     ".agents/skills/proloader-maintenance/SKILL.md": {
-      "sha256": "def042ed4ce5ca91395c2fc6e104deccec1c20402f3e0a28e5d6ed12948e0c33",
+      "sha256": "81c8273430d7388593cda31326df9f07c8cb74ecd9679831bef7f1123ad7452e",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/agents/openai.yaml": {
@@ -9,7 +9,7 @@
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/assets/auth-baseline.json": {
-      "sha256": "d0efad4896e7511bdc06af0e387a8a4c6b5e70baa83f248088c7c6fc77b6a4b6",
+      "sha256": "32ade6338f0c5fee238f451d1e297dafe72dcb35f2f3e30c6f0af767d763a879",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/assets/inspector-source.json": {
@@ -24,24 +24,48 @@
       "sha256": "872dd4745649ba23e391a3ae32c1024a5d503a3091c4583c59df4eee4196418b",
       "mode": "0o644"
     },
+    ".agents/skills/proloader-maintenance/references/adaptation.md": {
+      "sha256": "d837afcb2ac06f0bc6ad81645b4e39fdfaeca5f5727f4766b760481bc12738a2",
+      "mode": "0o644"
+    },
     ".agents/skills/proloader-maintenance/references/automation.md": {
-      "sha256": "266817bdae1aa0cab0123ad2658f419e9701c9d5038f8f8576ffeb5002d73bd2",
+      "sha256": "9ba7f70e9b576daa17832267def6c3830ea702d30f1495192cc802110528d2a0",
+      "mode": "0o644"
+    },
+    ".agents/skills/proloader-maintenance/references/case-20261103.md": {
+      "sha256": "f05b6d2c279f0d46c71de22d8a9962ce6d01d5b0522f46bcdcddce0b78c53163",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/references/releases.md": {
-      "sha256": "256acf8ff952f1a2a7fa11cb54cb89860fc6abc21ce8601fd8046f9ed52365d9",
+      "sha256": "4d81e7035a991a0ca09068174dc085a9bb78254257239c2bf979bcc5c452c621",
+      "mode": "0o644"
+    },
+    ".agents/skills/proloader-maintenance/references/troubleshooting.md": {
+      "sha256": "3cff54e2f7084afd454d48ced551bd2cc8d2489596bc717fdc7620732f626468",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/references/version-updates.md": {
       "sha256": "41aba3e650b0e83d9f6d667502ede635a4a0539c5b68b7e43412a69f81fbd8d0",
       "mode": "0o644"
     },
+    ".agents/skills/proloader-maintenance/scripts/apk_certificate.py": {
+      "sha256": "21bf715f8c0b5becb7e3a73f63fb7002c7a8f1e8ff63f24e72aa74e0e49b86ad",
+      "mode": "0o644"
+    },
+    ".agents/skills/proloader-maintenance/scripts/apk_entries.py": {
+      "sha256": "6a30066aa38fad83dbddb80bb974995f85366abc782e0b3837aa771ee02f6d8f",
+      "mode": "0o644"
+    },
+    ".agents/skills/proloader-maintenance/scripts/compare_modules.py": {
+      "sha256": "def4ae080749388bf4d901f80acaf53b365e3ef2cb6810ba5133b7d234b1fe90",
+      "mode": "0o644"
+    },
     ".agents/skills/proloader-maintenance/scripts/export_release.py": {
-      "sha256": "7b7a909c95d6b509eb72258a54cdcf126422ab48d9038012b90d261e6261091c",
+      "sha256": "90797d06ccdfa2328365ccea082f04ec766aa726f73c267face8bd93b0b1ab34",
       "mode": "0o644"
     },
     ".agents/skills/proloader-maintenance/scripts/maintain.py": {
-      "sha256": "11c87c8e72be9a63f3ae984aabe9c613cafe9f96804175cd39d755b4984b5cdb",
+      "sha256": "13a72912d0bb101a7a85cb8164f99b81d0af486942da1500438fa398fb56e921",
       "mode": "0o755"
     },
     ".agents/skills/proloader-maintenance/scripts/mcp_evidence.py": {
@@ -61,7 +85,7 @@
       "mode": "0o644"
     },
     "CHANGELOG.md": {
-      "sha256": "50ed0fc3f7187e2ef5ab60accfadc3c5b6241da0d93e9b17a840428efa7aaafb",
+      "sha256": "53cc3fa51db4f84a805c6025f8b7adba9054029b293a4fdc72c4612af29cc4d2",
       "mode": "0o644"
     },
     "LICENSE": {
@@ -73,15 +97,15 @@
       "mode": "0o644"
     },
     "MAINTAINERS.md": {
-      "sha256": "33b0b243357a561327c350101e873632bda8101607f525a6efb7dcdc24754d37",
+      "sha256": "1b29d971dd32eb1fd5b02a923b3ed6d4c513567fbb1e9e845ff7bcd100b82c80",
       "mode": "0o644"
     },
     "README.md": {
-      "sha256": "ca70e8810929d69d0f592dcc131fd5ca3dad94b83eda39bb73cf4436e68bf4a8",
+      "sha256": "def07e3ba5e3e1501dc41f481f193d4d6e996236bb435e107e431abe6863ea6e",
       "mode": "0o644"
     },
     "RELEASE_REVIEW.md": {
-      "sha256": "e4d703015734e4df4c13f6403f0d506862273dd55804cb999e22e7cf680e8ae8",
+      "sha256": "d310aabdbb3ec57eee30aa474e109aa5ed7a241fc2e35981def3a0eec0746b10",
       "mode": "0o644"
     },
     "SECURITY.md": {
@@ -106,6 +130,14 @@
     },
     "docs/BDX_IMPORT.md": {
       "sha256": "b5777ab2be43d09e9062c16d7126813849d8bd28700432ee3b32e771ef994311",
+      "mode": "0o644"
+    },
+    "docs/MAINTENANCE_20261103.md": {
+      "sha256": "82090e7dcc2137bc9bfe305342ddb51ccdf02ff5cbc5b0deafc41ee1cd8be5d6",
+      "mode": "0o644"
+    },
+    "docs/MAINTENANCE_20261111.md": {
+      "sha256": "dcde54313cc2cda38f116f9ac3fad972881cd1d6004fa3adfdd162d77c0ee0b0",
       "mode": "0o644"
     },
     "docs/OTHER_NBT.md": {
@@ -133,7 +165,7 @@
       "mode": "0o644"
     },
     "proloader/__init__.py": {
-      "sha256": "9fb28414f9bf8e70ac7d4a2e2687a19e26109e812a2bbc67e6fd2aa1e450bb59",
+      "sha256": "c850181038969bea693c0916d68006dc54d527620a67a326d2a0d40940b61a00",
       "mode": "0o644"
     },
     "proloader/__main__.py": {
@@ -205,7 +237,7 @@
       "mode": "0o644"
     },
     "proloader/block_entities.py": {
-      "sha256": "4a39ecc2292375df3ace681d01553a0a2e9c1fbd154ce41d9626afab11f437c8",
+      "sha256": "461f678ec537a8e29c19bb5a7d798ca0e81b975f334138ad35b53e4499e716d6",
       "mode": "0o644"
     },
     "proloader/block_names.py": {
@@ -365,7 +397,7 @@
       "mode": "0o644"
     },
     "proloader/net/bedrock/command_block.py": {
-      "sha256": "c26ad640c247c461a79543cec773a30abd0c1f9f23ff18869b5759d7bff5c52e",
+      "sha256": "a6a96f6024b929c1d13345ea9827c092f4f622a991b7d2a180214d86d67da07b",
       "mode": "0o644"
     },
     "proloader/net/bedrock/crypto.py": {
@@ -373,7 +405,7 @@
       "mode": "0o644"
     },
     "proloader/net/bedrock/login.py": {
-      "sha256": "1e5afb1be0c4855e2f69e8d0cc1a30c2a879e0814958407659b4d6e767fd1401",
+      "sha256": "b455886cef50062951bd3cabdab112a60de6f83322932978b025f1aa82be8e50",
       "mode": "0o644"
     },
     "proloader/net/bedrock/login_audit.py": {
@@ -381,7 +413,7 @@
       "mode": "0o644"
     },
     "proloader/net/bedrock/movement.py": {
-      "sha256": "57bce1e7c6622406f9798ae9ef261394123c71d0df9974eaeac34009640004de",
+      "sha256": "59dbaf4b82541f5301bdf4ed34f000587ff2c2ba82a19a95348be9fada7317af",
       "mode": "0o644"
     },
     "proloader/net/bedrock/netease_packets.py": {
@@ -393,7 +425,7 @@
       "mode": "0o644"
     },
     "proloader/net/bedrock/session.py": {
-      "sha256": "1bdac0f265ba63c90a578762053582978cb194470f0d89a49476fb45857526e5",
+      "sha256": "46dc44db47ff2f1e724c56461dd82aa7e334b39595d2c7d1f7f6105b58af2ee7",
       "mode": "0o644"
     },
     "proloader/net/bedrock/skin_geometry.json": {
@@ -417,11 +449,11 @@
       "mode": "0o644"
     },
     "proloader/net/netease/client.py": {
-      "sha256": "a2b876afa19c62a9d38a00ad9ae92cae9fb495bdbc0917197aab77bcf610f54e",
+      "sha256": "c94928ce5dd703244608c7142d9a0446ff278881d8b0fd7d4c8afdd2528c54d3",
       "mode": "0o644"
     },
     "proloader/net/netease/constants.py": {
-      "sha256": "bac6fbb283824b49827e2ad91c837c0d3911819eaa93d9d6d8bb98b367c1d6c5",
+      "sha256": "b1c0a781023fca3a92c81fd8bcd07aeaef7f705b834003162726e9ffb0323fc8",
       "mode": "0o644"
     },
     "proloader/net/netease/crypto.py": {
@@ -441,7 +473,7 @@
       "mode": "0o644"
     },
     "proloader/net/netease/pe_profiles.py": {
-      "sha256": "948534c5fac366a136be272e470797c4c907823c6f8c04f1fda2e66d39432944",
+      "sha256": "ec262b3d58ccc8ed77cff84f939b6d019150045fe6c9ca4289fe4cbd571c644a",
       "mode": "0o644"
     },
     "proloader/net/netease/rental_login.py": {
@@ -449,7 +481,7 @@
       "mode": "0o644"
     },
     "proloader/net/netease/runtime.py": {
-      "sha256": "5482ac5c7c3cc4178674e54138df541c6e30b806886fdd5c6ebf0f355d9f8a66",
+      "sha256": "a71631e6fb821101b79afd69fc80f89d28d17ed750396e286f9a60864b29c820",
       "mode": "0o644"
     },
     "proloader/net/netease/user_center.py": {
@@ -613,7 +645,7 @@
       "mode": "0o755"
     },
     "pyproject.toml": {
-      "sha256": "75e1dd9b9f728b9415498de3518514ca652ca33c3e5253c270085509be3f049d",
+      "sha256": "8eadda946a4dbbc8f11efb824a29087acc0cb1c33bb09d6a5fa3a521f9c95545",
       "mode": "0o644"
     },
     "templates/snow_menu_v3/README.md": {
@@ -729,7 +761,7 @@
       "mode": "0o644"
     },
     "tests/test_block_entities.py": {
-      "sha256": "efcb63cddf24c70d414d50a4024fa97ca3004ff4c9df274ca13994abdf5df27a",
+      "sha256": "4df10a0e857633bbaecd4d5f476dca8fc952ea80589326e2d2947927d589bc02",
       "mode": "0o644"
     },
     "tests/test_chunk_loading.py": {
@@ -749,7 +781,7 @@
       "mode": "0o644"
     },
     "tests/test_command_blocks.py": {
-      "sha256": "5b08325722521f113c53de0e47514e09e0b8e65111c4b2964c1d0241e74369f8",
+      "sha256": "ece76793a5dbacb767631a84bc4fa8f2a4657b77a4895c26a2c0bbe9f63ab347",
       "mode": "0o644"
     },
     "tests/test_diff.py": {
@@ -785,11 +817,11 @@
       "mode": "0o644"
     },
     "tests/test_maintenance_automation.py": {
-      "sha256": "8bf73ed73b537f23c1a7e388e2a58f7d8a5501bc0ea985169049d2619b6ac4fe",
+      "sha256": "75c90a16d36133efc1e90d1eba5c5871557dd152a8f9a34fd3cb65ae2e8eaa48",
       "mode": "0o644"
     },
     "tests/test_mcp_check.py": {
-      "sha256": "7dcdb8412e54499c1f027db2aaaefd63bd5667c42cda6b15ba2265d12fc8edc0",
+      "sha256": "1a0c12f79fae110390db7632de56ccc2cc2dd558a27ee66dc8c7e4e526b50be1",
       "mode": "0o644"
     },
     "tests/test_model.py": {
@@ -809,11 +841,11 @@
       "mode": "0o644"
     },
     "tests/test_netease_initialization.py": {
-      "sha256": "f67f7169a8c2e619d1a223b639fe817a596a9cccd80950076826d294c59a8365",
+      "sha256": "51856cd1ef1d2ff8ad967fd51ba7f015acd4e5f43bcc7e596950cb758d20ea77",
       "mode": "0o644"
     },
     "tests/test_netease_login.py": {
-      "sha256": "5accbf01df4fd6c81cb93dc9daa631049fc9acaedaa0374bba82fc95738237f3",
+      "sha256": "b7b7b0fcc7d5ebcc7e96f9a779bb61a7016d1777cf2ca16248bbb0a0b660a644",
       "mode": "0o644"
     },
     "tests/test_netease_mobile_classic.py": {
@@ -833,11 +865,11 @@
       "mode": "0o644"
     },
     "tests/test_netease_pe_payload.py": {
-      "sha256": "20ca89acdfac27d8a5d39d5eefd898ed93d75eeff2652b12f73522211b25a7ad",
+      "sha256": "203899cca358f662be163398f3a193e93f4bee9d0199e044bb6678b1daca6621",
       "mode": "0o644"
     },
     "tests/test_netease_shipped_profile.py": {
-      "sha256": "ba2edb29a89186177b3374d9d2cea03772e70c84c465f8cf9bc25cbdb8ece759",
+      "sha256": "342f9810662428a805529b21a186fa48e8032f53c1ade57341ab234c2656343d",
       "mode": "0o644"
     },
     "tests/test_pipeline.py": {
@@ -917,7 +949,7 @@
       "mode": "0o644"
     },
     "tests/test_teleport_ack.py": {
-      "sha256": "b457c5bc9532efafe1b9bb33a9b68b99c85ba8afe625020bf200d84dade0b93e",
+      "sha256": "01796503bfa05722083ab8ea0f8a2a700d811cd1d3edb90057ed0fbb8c2d0b15",
       "mode": "0o644"
     },
     "tests/test_user_center.py": {
@@ -934,6 +966,10 @@
     },
     "tests/test_world_codec.py": {
       "sha256": "41e61c589544891607001e279873def9e3180e324a91fe20aff26eae4103a648",
+      "mode": "0o644"
+    },
+    "third_party/fatalder-source.json": {
+      "sha256": "94945537c32d31b0ab54e7b9460929f382c5cee8f7f1ce82251bfaab1cb3114b",
       "mode": "0o644"
     },
     "third_party/fatalder/.github/workflows/build.yml": {
@@ -1096,6 +1132,10 @@
       "sha256": "27ea5aeec369445056f4a45355072115eef541d49b445e17f24cb11053bb7f9f",
       "mode": "0o644"
     },
+    "third_party/fatalder/cmd/grpc/proto.sh": {
+      "sha256": "d06469a281a79eff33d1fff63ed316ae6b3ca4bb07db28c0aaba9e929a7304ca",
+      "mode": "0o644"
+    },
     "third_party/fatalder/cmd/grpc/proto/building.proto": {
       "sha256": "a775723a4cd79543ada116494c81d38897d8234e53387f6e6aff4ecfb8b0f2a8",
       "mode": "0o644"
@@ -1130,10 +1170,6 @@
     },
     "third_party/fatalder/cmd/grpc/proto/tasks_config.proto": {
       "sha256": "b95a76b33043b85c3264e3c4d4eddf4c8d7fedc0929f5aaf85a424a29172d34d",
-      "mode": "0o644"
-    },
-    "third_party/fatalder/cmd/grpc/proto.sh": {
-      "sha256": "d06469a281a79eff33d1fff63ed316ae6b3ca4bb07db28c0aaba9e929a7304ca",
       "mode": "0o644"
     },
     "third_party/fatalder/cmd/grpc/services/building.go": {
@@ -1642,6 +1678,10 @@
     },
     "third_party/fatalder/modules/FunShuttler/core/minecraft/packet.go": {
       "sha256": "9bc8dfb48f62caf9f4e03b2aceff5ab4298d33e3432e778f0edecb04f4aaaaa3",
+      "mode": "0o644"
+    },
+    "third_party/fatalder/modules/FunShuttler/core/minecraft/protocol.go": {
+      "sha256": "f4c912ffa5088215f7ba63c9129003bbd765b47657809f5743b59c6733137bd4",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/minecraft/protocol/ability.go": {
@@ -3540,10 +3580,6 @@
       "sha256": "c54546931630a7a9f24db7e8c34426c5466c0c16dba2d1f31ad17961a4a78b00",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/minecraft/protocol.go": {
-      "sha256": "f4c912ffa5088215f7ba63c9129003bbd765b47657809f5743b59c6733137bd4",
-      "mode": "0o644"
-    },
     "third_party/fatalder/modules/FunShuttler/core/minecraft/raknet.go": {
       "sha256": "eb688c5cc126c300a490da03b3b04b419a307ae971fec0c5553b8ed1741d54d3",
       "mode": "0o644"
@@ -3612,32 +3648,36 @@
       "sha256": "72816b5245b25dad3f056545e0cb02a97f324525273b045d8b28a131f0ae3aa6",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/ai_command/execute_command_event.go": {
-      "sha256": "4a75ae8a30fbcc0014bf2ffbbd85e9e9e21d72c7364c942e6eac6d6dd0230953",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event.go": {
+      "sha256": "2a2ea6a04ef0985e766e60cf014014a38613ccf4926834f70f142471ff637e66",
+      "mode": "0o644"
+    },
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft.go": {
+      "sha256": "2e177db202eb536f8f5bc55d24c98ceeb531b25f68a1a40f22db781b9e87ad22",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/ai_command.go": {
       "sha256": "468f14f1b971bd485a86a35b62cacd4142010eb3fb1723a81342eddc72e24054",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/preset/get_loaded_instances.go": {
-      "sha256": "2f7c28a8caffa618b299287ab97299ba7d3b66e1684062c342caef6c354f8d59",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/ai_command/execute_command_event.go": {
+      "sha256": "4a75ae8a30fbcc0014bf2ffbbd85e9e9e21d72c7364c942e6eac6d6dd0230953",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/preset.go": {
       "sha256": "92b40b564c74ca40cde3c51aa0d9d8163fe6971aec8d0b0a8fe0d7c4b7ba95f5",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/vip_event_system/player_ui_init.go": {
-      "sha256": "a416fe19caf081b4c1987e3b2ea986b8f2c250b99f6220b8f39e75c645086c14",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/preset/get_loaded_instances.go": {
+      "sha256": "2f7c28a8caffa618b299287ab97299ba7d3b66e1684062c342caef6c354f8d59",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/vip_event_system.go": {
       "sha256": "1fa65bbee90b7145e447215cc9cce22960e6efb50a35590b2bcb5c914be4a62f",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft.go": {
-      "sha256": "2e177db202eb536f8f5bc55d24c98ceeb531b25f68a1a40f22db781b9e87ad22",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/minecraft/vip_event_system/player_ui_init.go": {
+      "sha256": "a416fe19caf081b4c1987e3b2ea986b8f2c250b99f6220b8f39e75c645086c14",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/client_to_server/pool.go": {
@@ -3660,12 +3700,20 @@
       "sha256": "d25841d60b80279899080a0ec129d0a52522e36e3db8f1859fb2abd99f634b3a",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/achievement/init_information.go": {
-      "sha256": "819571943ea15cfc393dbd49009118ce4218d8af0ed721636756d2e8cedbda05",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft.go": {
+      "sha256": "2212d54170858e0fbacaf701325a2dfd2a34f346bc7675b7f635a9d64de70ef2",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/achievement.go": {
       "sha256": "65b1d1d885cac945ea621848fe301d63c506951e15cb89a64fd40413ce95ca75",
+      "mode": "0o644"
+    },
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/achievement/init_information.go": {
+      "sha256": "819571943ea15cfc393dbd49009118ce4218d8af0ed721636756d2e8cedbda05",
+      "mode": "0o644"
+    },
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/ai_command.go": {
+      "sha256": "f69d7da38a97c34896d6254590672f4a7b9b739861090bd9a4683f2771b59d15",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/ai_command/after_execute_command_event.go": {
@@ -3680,24 +3728,24 @@
       "sha256": "4f31af6dbae3360924b7da72b0c980dd4988990157c76fc5cc044eb519139124",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/ai_command.go": {
-      "sha256": "f69d7da38a97c34896d6254590672f4a7b9b739861090bd9a4683f2771b59d15",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_extension.go": {
+      "sha256": "817bf9e1f0f124195409863f9a9bd80f81639a2a86be1201d037fb53aeb7d4ef",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_extension/player_add_room.go": {
       "sha256": "48d15cc2bea45b2291dbc253cebc12c0cd985ccc6b3da5ca75c2d9100dc6b53f",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_extension.go": {
-      "sha256": "817bf9e1f0f124195409863f9a9bd80f81639a2a86be1201d037fb53aeb7d4ef",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_phrases.go": {
+      "sha256": "ae40267c1f6e4cc004890aa9b5f83008139bd17fd4c74a0e59545deed974279f",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_phrases/sync_new_player_phrases_data.go": {
       "sha256": "dadf9dc99de0a436193152ddeb7a9ced45afe5e164239eeec0ff7bfe8450c2c6",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/chat_phrases.go": {
-      "sha256": "ae40267c1f6e4cc004890aa9b5f83008139bd17fd4c74a0e59545deed974279f",
+    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/pet.go": {
+      "sha256": "bf51a4d6b44f4ca75622429cc186406d93dee4736f2f444475bf1dbaf05810a3",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/pet/check_server_contain_pet.go": {
@@ -3708,20 +3756,8 @@
       "sha256": "72e36c8a994d320ac79ef6e832cd44471d4984171004d4b93c39fc0059347421",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft/pet.go": {
-      "sha256": "bf51a4d6b44f4ca75622429cc186406d93dee4736f2f444475bf1dbaf05810a3",
-      "mode": "0o644"
-    },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/minecraft.go": {
-      "sha256": "2212d54170858e0fbacaf701325a2dfd2a34f346bc7675b7f635a9d64de70ef2",
-      "mode": "0o644"
-    },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event/server_to_client/pool.go": {
       "sha256": "9a4e9c791ab267ae2eb4551b71a23c3c07b17d1b577b69b06223e5ef3b877a48",
-      "mode": "0o644"
-    },
-    "third_party/fatalder/modules/FunShuttler/core/py_rpc/mod_event.go": {
-      "sha256": "2a2ea6a04ef0985e766e60cf014014a38613ccf4926834f70f142471ff637e66",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/py_rpc/pool.go": {
@@ -3994,6 +4030,10 @@
     },
     "third_party/fatalder/modules/FunShuttler/core/standard_minecraft/packet.go": {
       "sha256": "488d71b740ffc507406f9983ac0b6d9cb34bedcfc3e65bb47783e934c5fb4c87",
+      "mode": "0o644"
+    },
+    "third_party/fatalder/modules/FunShuttler/core/standard_minecraft/protocol.go": {
+      "sha256": "9acf32a59a43a254c7dbc83adbcad763d3e060ee09d273d8b3c1276b286753d0",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/core/standard_minecraft/protocol/ability.go": {
@@ -5016,10 +5056,6 @@
       "sha256": "c54546931630a7a9f24db7e8c34426c5466c0c16dba2d1f31ad17961a4a78b00",
       "mode": "0o644"
     },
-    "third_party/fatalder/modules/FunShuttler/core/standard_minecraft/protocol.go": {
-      "sha256": "9acf32a59a43a254c7dbc83adbcad763d3e060ee09d273d8b3c1276b286753d0",
-      "mode": "0o644"
-    },
     "third_party/fatalder/modules/FunShuttler/core/standard_minecraft/raknet.go": {
       "sha256": "0e84887a32a755330dc8317307261cc77950986361964382876161700a95e64a",
       "mode": "0o644"
@@ -5096,6 +5132,10 @@
       "sha256": "567ffdd5435dbc2401fe1f95b50dfc603a2329eeedcf8a10cc61644f177fced3",
       "mode": "0o644"
     },
+    "third_party/fatalder/modules/FunShuttler/game_control/game_interface/item_stack_operation.go": {
+      "sha256": "2db3ca1cd0ff9be2274c6215acf149a6dd05a93c8124c22755389b0e7e12d3db",
+      "mode": "0o644"
+    },
     "third_party/fatalder/modules/FunShuttler/game_control/game_interface/item_stack_operation/crafting.go": {
       "sha256": "f95579f2a843680eb9d6d43918f29d00614de5b6909b27eb4a875d93ed96b46f",
       "mode": "0o644"
@@ -5134,10 +5174,6 @@
     },
     "third_party/fatalder/modules/FunShuttler/game_control/game_interface/item_stack_operation/trimming.go": {
       "sha256": "182b3fb800fb3cc46c2fe367f873ee89a1bf040762026e01b711eb8ac0d7a1db",
-      "mode": "0o644"
-    },
-    "third_party/fatalder/modules/FunShuttler/game_control/game_interface/item_stack_operation.go": {
-      "sha256": "2db3ca1cd0ff9be2274c6215acf149a6dd05a93c8124c22755389b0e7e12d3db",
       "mode": "0o644"
     },
     "third_party/fatalder/modules/FunShuttler/game_control/game_interface/item_stack_transaction/commit.go": {
@@ -7280,10 +7316,6 @@
       "sha256": "3710f66b718e9d305b875d496b1152a672d30c6e0116074e9503864e09d05d1b",
       "mode": "0o644"
     },
-    "third_party/fatalder-source.json": {
-      "sha256": "94945537c32d31b0ab54e7b9460929f382c5cee8f7f1ce82251bfaab1cb3114b",
-      "mode": "0o644"
-    },
     "tools/analysis/analyze_batch_format.py": {
       "sha256": "3bec899c17263b63cf6ded21154ca439e74d388aa897fec0b91f741c8d8c1a2a",
       "mode": "0o644"
@@ -7457,7 +7489,7 @@
       "mode": "0o644"
     },
     "tools/diagnostics/verify_rental_stability.py": {
-      "sha256": "3ffa954428868e631408b5e78f5b76ee61a894fce9fb84caaea38e0f67c47a2c",
+      "sha256": "7543d3a07d0ae72dc8aa5c42f5d2dff90ce421c81d0d656fec720e2994c36169",
       "mode": "0o644"
     },
     "tools/extraction/extract_game_version.py": {
@@ -7601,7 +7633,7 @@
       "mode": "0o644"
     },
     "tools/mcpcheck/main.go": {
-      "sha256": "a96b90fce6c2982851fa28c6a91511a0c69e783a8f4500b553554eeee8781ca2",
+      "sha256": "906c616bde75945df3d2bcc6c7aa04262375062fa5d0e6e1740233439c15111b",
       "mode": "0o644"
     },
     "tools/mcpcheck/main_test.go": {
@@ -7633,7 +7665,7 @@
       "mode": "0o644"
     },
     "tools/nbtcodec/main.go": {
-      "sha256": "fade74ae2129b52728e193d740daf50cdcac3057e6d9ce09d3b5fee12a2aa6d1",
+      "sha256": "44e17a4a8e76ed6b38844341649dfb47e23018ce75fe643a134b1ce995fd46a7",
       "mode": "0o644"
     },
     "tools/package_snow_menu.py": {

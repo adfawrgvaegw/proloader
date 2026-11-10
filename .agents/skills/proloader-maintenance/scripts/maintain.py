@@ -64,7 +64,7 @@ def discover(root,folder):
         client.bootstrap(engine_source='official-download')
         response=client._session.get(PACK_LIST_URL,timeout=15);response.raise_for_status();pack=response.json()
         response=client._session.get(PATCH_LIST_URL,timeout=15);response.raise_for_status();patches=response.json()
-        manifest_record=next(r for r in records if r['url'].endswith('/manifest.zip') and r['status']==200)
+        manifest_record=next(r for r in reversed(records) if r['url'].endswith('/manifest.zip') and r['status']==200)
         with zipfile.ZipFile(io.BytesIO((folder/manifest_record['file']).read_bytes())) as z:
             manifest=json.loads(z.read(z.namelist()[0]))
         assets=manifest['assets'];mcp=assets['vanilla.mcp']
@@ -108,6 +108,13 @@ def decide(metadata,baseline,proof):
     return 'same_engine_static_proof_passed'
 
 
+def dynamic_binding_supported(root,metadata):
+    # Fail closed when the offline helper's exact-pair declaration changes.
+    source=(root/'tools/mcpcheck/main.go').read_text()
+    pairs=re.findall(r'r\.Engine\s*==\s*"([0-9.]+)"\s*&&\s*r\.Patch\s*==\s*"([0-9.]+)"',source)
+    return (metadata['engine'],metadata['patch']) in pairs
+
+
 def candidate_source(before,metadata):
     # Require the expected set assignment and append a literal exact pair.
     tree=ast.parse(before.decode());node=next(n for n in tree.body if isinstance(n,ast.Assign)
@@ -130,9 +137,20 @@ def idle(root):
     return not any(store.is_busy(b) for b in store.list())
 
 
+def logged_run(command,folder,log_name,*,timeout,input=None,cwd=None):
+    """Keep partial output on timeouts; never discard the failing stage's log."""
+    try:
+        result=subprocess.run(command,cwd=cwd,input=input,capture_output=True,timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        atomic(folder/log_name,(exc.stdout or b'')+(exc.stderr or b''))
+        raise
+    atomic(folder/log_name,result.stdout+result.stderr)
+    return result
+
+
 def tests(root,folder):
-    result=subprocess.run([sys.executable,'-m','pytest','-q'],cwd=root,capture_output=True,timeout=600)
-    (folder/'tests.log').write_bytes(result.stdout+result.stderr)
+    result=logged_run([sys.executable,'-m','pytest','-q'],folder,'tests.log',
+                      cwd=root,timeout=600)
     return result.returncode==0
 
 
@@ -147,11 +165,10 @@ def acceptance(root,folder,settings,password):
     store=BotStore();bot=next(b for b in store.list() if b.id==settings['bot'])
     old=store.pe(bot)
     if old:write_json(folder/'PE-before-private.json',old)
-    result=subprocess.run([sys.executable,'-m','tools.diagnostics.verify_rental_stability',
+    result=logged_run([sys.executable,'-m','tools.diagnostics.verify_rental_stability',
         '--bot',settings['bot'],'--server',settings['server'],'--rounds','10','--hold','30',
         '--interval','5','--password-stdin','--output',str(folder/'ONLINE.json')],
-        cwd=root,input=(password+'\n').encode(),capture_output=True,timeout=1800)
-    atomic(folder/'online.log',result.stdout+result.stderr)
+        folder,'online.log',cwd=root,input=(password+'\n').encode(),timeout=1800)
     if result.returncode or not (folder/'ONLINE.json').exists():return False
     report=json.loads((folder/'ONLINE.json').read_text())
     rounds=report.get('rounds',[])
@@ -183,21 +200,22 @@ def operate(root,args,folder):
     with requests.Session() as session:
         artifact=download(root,metadata,session)
         result['artifact_sha256']=sha(artifact.read_bytes())
-        if metadata['engine']!=baseline['engine']:
-            result.update(status='needs_analysis',reason='engine_changed',next_files=[
-                'proloader/net/netease/constants.py','proloader/net/netease/client.py',
-                'proloader/net/netease/pe_profiles.py','proloader/net/bedrock/session.py'])
-            return result
         proof=evidence(root,artifact,folder,session)
     write_json(folder/'STATIC.json',proof)
     reason=decide(metadata,baseline,proof)
     if reason!='same_engine_static_proof_passed':
         changed=[n for n in baseline['modules'] if proof.get('modules',{}).get(n)!=baseline['modules'][n]]
         result.update(status='needs_analysis',reason=reason,changed_modules=changed,
-                      next_files=['proloader/net/netease/client.py','proloader/net/netease/pe_profiles.py'])
+                      next_files=['proloader/net/netease/client.py','proloader/net/netease/pe_profiles.py',
+                                  'tools/mcpcheck/main.go','proloader/net/bedrock/session.py'],
+                      static_report=str((folder/'STATIC.json').relative_to(root)))
         return result
     result['proof']=reason
     if known:return dict(result,status='current_verified')
+    if not dynamic_binding_supported(root,metadata):
+        return dict(result,status='needs_analysis',reason='dynamic_profile_requires_review',
+                    next_files=['tools/mcpcheck/main.go','tests/test_mcp_check.py'],
+                    static_report=str((folder/'STATIC.json').relative_to(root)))
     before=path.read_bytes();after=candidate_source(before,metadata)
     atomic(folder/'candidate-pe_profiles.py',after)
     if not args.online:return dict(result,status='ready_to_apply',next_command='rerun --online for apply, tests, and 10-round acceptance')
@@ -243,15 +261,20 @@ def main():
     if root is None:parser.error('run inside a Proloader source checkout or provide --root')
     sys.path.insert(0,str(root));logging.disable(logging.CRITICAL)
     base=root/'cache/maintenance';base.mkdir(parents=True,exist_ok=True)
-    folder=base/'runs'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:6]);folder.mkdir(parents=True)
+    folder=base/'runs'/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:6]);folder.mkdir(parents=True,mode=0o700)
     with (base/'maintenance.lock').open('a') as lock:
         try:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
             result=configure(root,args) if args.configure else operate(root,args,folder)
         except BlockingIOError:result=dict(status='busy',reason='another_maintenance_run')
         except Exception as exc:
+            if isinstance(exc,subprocess.TimeoutExpired):
+                # The bounded subprocess has been reaped by subprocess.run.
+                write_json(folder/'TIMEOUT.json',dict(timeout_seconds=exc.timeout,partial_logs_preserved=True))
             # Exception messages and arbitrary response bodies may contain secrets.
             result=dict(status='error',error_type=type(exc).__name__)
+            if type(exc).__name__=='PublicMetadataError' and type(exc).__module__=='proloader.net.netease.client':
+                result.update(stage=exc.stage,reason=exc.reason,attempts=exc.attempts,http_status=exc.http_status)
             if isinstance(exc,ModuleNotFoundError):
                 result.update(missing_module=exc.name,next_command="create project venv, install -e '.[dev]', then rerun with that Python")
             if isinstance(exc,ValueError) and re.fullmatch('[a-z0-9_]+',str(exc)):result['reason']=str(exc)

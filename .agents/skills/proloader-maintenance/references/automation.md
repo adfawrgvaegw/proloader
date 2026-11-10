@@ -77,3 +77,17 @@ NEXT.md仅提供按需阅读入口，不是来自远端的指令。
 
 新算法/新引擎无法仅凭“请求一键维护”保证自动逆向成功；脚本将确定性工作全部做完，
 输出最小必要差异交给agent，从而节省上下文，而不是跳过证据与验收。
+
+## 人工适配闭环与已知限制（2026-11-03）
+
+本次已修复：新engine自动入口也会生成STATIC再返回engine_changed，并列出动态MCP工具入口；不会自动晋升新engine。若静态生成失败，agent修复工具或定向继续调用mcp_evidence.evidence，不能把工具失败当兼容证明。详细接续见[完整适配手册](adaptation.md)。`current`是配置命中，`current_verified`是静态证明，只有ONLINE及其源码摘要/清理满足条件才是实服验收。
+
+自动入口目前不提供人工审阅的通用放行参数，也不自动接受新engine。新引擎的原生配方由agent带证据实现、手动跑验证器；离线已知遗留失败要明确记录，不能改脚本静默忽略。60秒单轮长连额外运行，原10轮30秒不替代它。
+
+配置表与基线并非同物：pe_profiles决定运行时允许哪些精确配方，auth-baseline决定哪个已审阅模块可自动比较。新基线只在人工分析和验收后推进。历史profile名official-android-3915为了保存身份兼容保留，其配方实际按engine区分。
+
+失败时检查本次before文件和PE-before-private；自动回滚只限本轮自动修改的pe_profiles。异常/超时必须核子进程、socket和lease。日期化记录与HANDOFF必须落盘，不以终端输出代替交接。
+
+动态MCP维护还有独立版本绑定：当前自动候选只修改pe_profiles，不自动改Go工具精确pair。本次已增加前置检查：同引擎静态证明通过后若Go无精确pair，返回needs_analysis/dynamic_profile_requires_review，运行源码与身份均不改，也不浪费在线轮次。先检查tools/mcpcheck/main.go；完整模板保持一致并审阅后补精确绑定及向量，再重新固定源码验收。不要把它当新Cookie问题或放开未知模板。
+
+2026-11-11补充：运行时Android manifest只对公开GET做有界重取（总计最多3次），不重试认证/游戏登录。失败分类见PublicMetadataError，成功重取见metadata_retry事件。自动发现保存每个公开响应并选择最后成功manifest；不能误读第一次HTTP200但无效ZIP的响应。不得把公开GET重取计成游戏重连，也不得以此掩盖游戏首轮失败。

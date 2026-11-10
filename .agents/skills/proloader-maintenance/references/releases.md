@@ -4,7 +4,7 @@
 
 ## 独立发布目录
 
-用户指定的大型建筑测试通过后，运行：
+当用户要求的相关验收已通过且任务需要准备发布包时，运行：
 
 ```sh
 python3 .agents/skills/proloader-maintenance/scripts/export_release.py \
@@ -23,4 +23,4 @@ python3 .agents/skills/proloader-maintenance/scripts/export_release.py \
 - 保留AGPL-3.0、原MIT、各子模块许可及对应源码/修改/依赖锁。核实二次分发的传递依赖义务，不能假定进程隔离可以规避许可。
 - `third_party/fatalder-source.json`保持可复现来源；未知commit应标未知，不能捏造。
 - 本机测试凭据、服务编号、手机号、昵称、绝对用户路径、抓包和私有诊断不进入公开内容。公开repo的AGENTS可以从维护入口重新编写，不复制本机个人记忆。
-- 用户确认大型测试通过后才能准备实际发布；推送/建仓库/发布Release按当时授权范围执行。上传前展示明确的仓库目标与待发布内容。
+- 按当前任务要求完成验收，不能把旧聊天的大型建筑测试当所有发布的固定前置条件。推送/建仓库/发布Release需要当前会话或持续有效的明确授权；版本维护本身不授权发布。已有授权则完成必要检查后执行，不重复询问。目标仓库与待发布内容必须明确、可审阅。

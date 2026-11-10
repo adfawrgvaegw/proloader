@@ -78,3 +78,41 @@ def test_verified_3942_patch_uses_fresh_resource_hash_in_signed_message():
         assert captured['patch_version']=='3.9.42.301055'
         assert '3.9.42.30105565ce57607cdb2f70a040a1db7149279d' in captured['message']
     finally:c._session.close()
+
+
+@pytest.mark.parametrize('patch,resources_hash,expected_sign', [
+    ('3.10.12.301658','833f5404381fb9011189467a1a4e50d2','SSwioAnHS1IJt8pmkeT6ng=='),
+    ('3.10.15.301976','a72549110aa25aadee47980bcebdd9e6','SXSMzQkPbTkJ/2uMkWwK3Q=='),
+])
+def test_3105_recipe_uses_its_own_native_hash_and_parameters(monkeypatch,patch,resources_hash,expected_sign):
+    c = _client()
+    c.engine_version = '3.10.5.301327'
+    c.g79_latest_version = patch
+    c.patch_resources_hash = resources_hash
+    monkeypatch.setattr('proloader.net.netease.client.uuid.uuid4', lambda: '00000000-0000-0000-0000-000000000000')
+    captured = {}
+    def post(url, *, data, **kwargs):
+        captured.update(json.loads(get_valid_json(g79_http_decrypt(bytes.fromhex(data)))))
+        return Mock(text=g79_http_encrypt(b'{"code":32}').hex())
+    c._session.post = post
+    cookie = json.dumps({'sauth_json': json.dumps(dict(sdkuid='U', sessionid='T', udid='D', deviceid='X'))})
+    try:
+        with pytest.raises(RuntimeError, match='code: 32'):
+            c.authenticate_with_cookie(cookie)
+        assert captured['message'] == (
+            '3.10.5.301327393dfdf6f78831f80a7e6aa305b21227'
+            + patch + resources_hash +
+            '2b3e7ca013bb30a74d822579860c042b'
+            '00000000-0000-0000-0000-000000000000')
+        assert captured['sign'] == expected_sign
+        # Changing just the engine must not combine a legacy patch/hash with it.
+        c.g79_latest_version = '3.9.43.301387'
+        with pytest.raises(ValueError, match='inspected metadata'):
+            c.authenticate_with_cookie(cookie)
+    finally:
+        c._session.close()
+
+
+def test_3105_sign_matches_static_register_transcription():
+    text = ('proloader-offline-vector-' * 20)[:256]
+    assert pe_auth_sign(text, 2, 8, pad_full_block=True) == 'SVh8RQlzOGgJY3fmkVAKaw=='

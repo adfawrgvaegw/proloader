@@ -45,7 +45,7 @@ def verify(token, private):
     return claims
 
 
-@pytest.mark.parametrize("protocol", [686, 860])
+@pytest.mark.parametrize("protocol", [686, 860, 898])
 @pytest.mark.parametrize("as_object", [False, True])
 def test_chain_layout_and_signatures(auth_chain, protocol, as_object):
     key, original = auth_chain
@@ -102,7 +102,7 @@ async def test_invalid_chain_sends_nothing(auth_chain):
     assert session._recv_task is None
 
 
-@pytest.mark.parametrize("protocol,version,os", [(686, "1.21.2", 1), (860, "1.21.120", 2)])
+@pytest.mark.parametrize("protocol,version,os", [(686, "1.21.2", 1), (860, "1.21.120", 2), (898, "1.21.130", 2)])
 async def test_session_login_sequence(auth_chain, protocol, version, os):
     key, chain = auth_chain
     session = BedrockSession(AsyncMock(), netease_mode=True, netease_jwt_chain=json.dumps(chain),

@@ -60,8 +60,8 @@ func signPackets(r request) (out []encoded, err error) {
 			err = fmt.Errorf("sign codec: %v", v)
 		}
 	}()
-	if r.Protocol != 860 && !(r.Protocol == 686 && r.Action == "teleport_ack") {
-		return nil, fmt.Errorf("sign editor is configured for Netease wire profile 860; live acceptance pending")
+	if r.Protocol != 860 && r.Protocol != 898 && !(r.Protocol == 686 && r.Action == "teleport_ack") {
+		return nil, fmt.Errorf("sign editor is configured for reviewed Netease wire profiles 860/898; live acceptance pending")
 	}
 	pos := protocol.BlockPos(r.Position)
 	switch r.Action {
@@ -122,8 +122,8 @@ func signPackets(r request) (out []encoded, err error) {
 			}}),
 		}, nil
 	case "auth", "teleport_ack":
-		if r.Protocol == 860 {
-			// NEMC860 schema: NTvector commit1fee42c2, PlayerAuthInput.h.
+		if r.Protocol == 860 || r.Protocol == 898 {
+			// NEMC860/898: NTvector 1fee42c2 / ce743787 PlayerAuthInput.h.
 			// Vanilla omits bypassMoveVector and the 12-byte camera/ground tail.
 			buf := bytes.NewBuffer(nil)
 			w := protocol.NewWriter(buf, 0)

@@ -15,6 +15,8 @@ Users do not need to execute a terminal command or a desktop launcher.
 The existing `proloader维护.command` remains an optional legacy shortcut; it is
 not required by the skill workflow. Local credentials stay in place. See the
 skill's `references/automation.md` for internal flags and evidence boundaries.
+Use `references/adaptation.md` and `references/troubleshooting.md` for native
+authentication, protocol selection, metadata failures and live acceptance.
 
 ## Runtime and source
 
@@ -57,8 +59,9 @@ after shell delivery through the same Python session. Plain container slots use
 upstream-style replaceitem commands; sign text uses the independent
 `tools/nbtcodec` adapter importing the unmodified FunShuttler NetEase click/auth
 packet codecs. This path has offline tests, not live acceptance. Sign execution
-is gated to the current NetEase860 session, but that gate alone does not prove
-wire compatibility. Unsupported fields/items are explicitly inventoried in the
+is gated to the explicitly reviewed NetEase860/898 layouts. Protocol898 has
+offline codec and simulated writer coverage. Live NBT editing remains a separate
+acceptance step. Unsupported fields/items are explicitly inventoried in the
 plan; supported-subset completion must not be presented as arbitrary NBT import.
 See `docs/OTHER_NBT.md`. Local repairs have separate NBT cursors and resume
 must read before writing; failed readback cannot advance the durable cursor.
@@ -76,8 +79,8 @@ are retained in parsed mcstructure source but not restored by CommandBlockUpdate
 Other block entities are connected for preflight-supported plain containers and
 sign text/formatting. Arbitrary item tags, history and source automatic activation
 remain outside this delivery contract; keep unsupported counts visible.
-Live permission/switch/protocol/trigger acceptance and a fresh ten-round connection
-regression remain pending; offline results must not be described as live success.
+Version-specific connection evidence is recorded in docs/MAINTENANCE_20261111.md.
+Live trigger behavior and complex NBT delivery require their own acceptance.
 
 ## Build and verify
 
@@ -133,6 +136,6 @@ then review it before any upload. Public source must not include local cache,
 private handoff documents, personal AGENTS instructions, credentials, packet
 captures, private building assets, or machine-specific absolute paths.
 
-Large-building tests precede release preparation. Account/server/coordinate
+Use acceptance results appropriate to the changes being released. Account/server/coordinate
 examples must be placeholders. GitHub creation, push and release publication
 follow the owner's authorization; no scheduled upload is implied.

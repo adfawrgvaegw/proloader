@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 - 2026-11-11
+
+- Adapt exact 3.10.5 engine and 3.10.12/3.10.15 patch metadata with engine-specific native PE signatures.
+- Support rental protocol 898 with GameVersion 1.21.130, Certificate login, modern teleport acknowledgements and reviewed NBT wire layouts.
+- Add bounded public-manifest GET recovery and safe failure diagnostics while preserving first-attempt game connection acceptance.
+- Expand the maintenance skill with static APK, certificate and bytecode inspection tools and complete recovery guidance.
+- Record a 60-second read-only hold and an independent ten-round connection series for the development build. See docs/MAINTENANCE_20261111.md.
+
 ## 0.1.1 - 2026-10-28
 
 - Adapt the reviewed 3.9.43 patch pair and statically decode the eight-field dynamic MCP challenge; reject unknown templates.

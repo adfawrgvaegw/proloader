@@ -52,7 +52,11 @@ func literal(value string) []byte {
 }
 
 func solve(r request) (map[string]any, error) {
-	if len(r.Marshal) > 256*1024 || len(r.Salt) > 4096 || r.Engine != "3.9.15.297907" || r.Patch != "3.9.43.301387" {
+	// Exact version pairs only; the complete decoded template must still match.
+	supported := (r.Engine == "3.9.15.297907" && r.Patch == "3.9.43.301387") ||
+		(r.Engine == "3.10.5.301327" && r.Patch == "3.10.12.301658") ||
+		(r.Engine == "3.10.5.301327" && r.Patch == "3.10.15.301976")
+	if len(r.Marshal) > 256*1024 || len(r.Salt) > 4096 || !supported {
 		return nil, fmt.Errorf("unsupported_profile")
 	}
 	raw, err := base64.StdEncoding.DecodeString(r.Marshal)

@@ -15,6 +15,7 @@ import time
 
 from proloader.bots import BotStore, private_json
 from proloader.net.netease.runtime import rental_session
+from proloader.net.netease.constants import CURRENT_RENTAL_PROTOCOL
 
 
 def source_digest(root=None):
@@ -25,6 +26,10 @@ def source_digest(root=None):
     paths += sorted((native/'cmd/proloader-nbt').glob('*.go'))
     paths += [native/'go.mod', native/'go.sum']
     paths += sorted((root/'tools/mcpcheck').rglob('*.go'))
+    for helper in ('tools/nbtcodec', 'tools/worldreader'):
+        directory = root/helper
+        paths += sorted(directory.rglob('*.go'))
+        paths += [p for p in directory.glob('go.*') if p.name in ('go.mod', 'go.sum')]
     paths += [root/'tools/mcpcheck/go.mod',root/'tools/mcpcheck/UPSTREAM.json',
               root/'tools/mcp_reverse/vmu/nls_cipher.py']
     for path in sorted(set(paths)):
@@ -37,7 +42,7 @@ async def run(args, password):
     store = BotStore()
     bot = next(b for b in store.list() if b.id == args.bot)
     report = dict(started_at=datetime.now(timezone.utc).isoformat(), source_sha256=source_digest(),
-                  server=args.server, bot=args.bot, protocol=860, profile='official-android-3915',
+                  server=args.server, bot=args.bot, protocol=CURRENT_RENTAL_PROTOCOL, profile='official-android-3915',
                   hold_seconds=args.hold, interval_seconds=args.interval,
                   reconnect_retries=0, rounds=[], passed=False)
     def save():

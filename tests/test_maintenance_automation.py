@@ -23,6 +23,8 @@ def scenario(tmp_path,monkeypatch):
     metadata=dict(engine=baseline['engine'],patch='3.9.43.999999',resources_hash='a'*32,
                   gray={'engine':'3.10.0.300878','ratio':5},rn_present=False,overlay=False,native_assets={})
     folder=tmp_path/'report';folder.mkdir()
+    helper=tmp_path/'tools/mcpcheck/main.go';helper.parent.mkdir(parents=True)
+    helper.write_text('r.Engine == "'+metadata['engine']+'" && r.Patch == "'+metadata['patch']+'"')
     settings=tmp_path/'cache/maintenance/settings.json';settings.parent.mkdir(parents=True)
     settings.write_text(json.dumps(dict(bot='fixture',server='12345678',password_source='empty')))
     artifact=tmp_path/'source.mcp';artifact.write_bytes(b'fixture')
@@ -79,10 +81,12 @@ def test_changed_auth_module_cannot_auto_accept(scenario,monkeypatch):
 
 def test_engine_change_cannot_reuse_old_native_recipe(scenario,monkeypatch):
     s=scenario;s.metadata['engine']='3.10.0.300878'
-    def forbidden(*a):raise AssertionError('cannot promote another engine')
-    monkeypatch.setattr(m,'evidence',forbidden)
+    inspector=Mock(return_value=s.baseline)
+    monkeypatch.setattr(m,'evidence',inspector)
     result=m.operate(s.root,s.args,s.folder)
     assert result['reason']=='engine_changed' and s.path.read_bytes()==s.before
+    inspector.assert_called_once()
+    assert (s.folder/'STATIC.json').exists()
 
 
 @pytest.mark.parametrize('reason',['busy','no_online'])
@@ -147,3 +151,47 @@ def test_online_acceptance_requires_ten_rounds_and_unchanged_source(tmp_path,mon
     backup=tmp_path/'PE-before-private.json'
     assert backup.stat().st_mode&0o777==0o600
     assert json.loads(backup.read_text())=={'private':'preserved'}
+
+
+def test_timeout_preserves_partial_stage_log(tmp_path, monkeypatch):
+    def timeout(*a, **kw):
+        raise m.subprocess.TimeoutExpired(a[0], kw['timeout'], output=b'partial stdout\n', stderr=b'partial stderr\n')
+    monkeypatch.setattr(m.subprocess, 'run', timeout)
+    with pytest.raises(m.subprocess.TimeoutExpired):
+        m.tests(tmp_path, tmp_path)
+    assert (tmp_path/'tests.log').read_bytes() == b'partial stdout\npartial stderr\n'
+
+
+def test_missing_dynamic_version_binding_stops_before_source_or_online(scenario, monkeypatch):
+    s = scenario
+    (s.root/'tools/mcpcheck/main.go').write_text('r.Engine == "3.9.15.297907" && r.Patch == "3.9.43.301387"')
+    online = Mock()
+    monkeypatch.setattr(m, 'acceptance', online)
+    result = m.operate(s.root, s.args, s.folder)
+    assert result['reason'] == 'dynamic_profile_requires_review'
+    assert s.path.read_bytes() == s.before
+    online.assert_not_called()
+
+
+
+def test_discovery_uses_manifest_from_successful_public_retry(tmp_path, monkeypatch):
+    import io, zipfile
+    from proloader.net.netease import client
+    data=io.BytesIO()
+    with zipfile.ZipFile(data, 'w') as archive:
+        archive.writestr('manifest.json',json.dumps({'assets':{'vanilla.mcp':{'md5':'a'*32,'size':3}}}))
+    class FakeClient:
+        def __init__(self, **kw):
+            self._session=Mock();self._session.hooks={}
+            self._session.get.side_effect=[Mock(json=lambda:{'netease':{'version':'3.10.5.301327','gray_ratio':100}}),
+                                          Mock(json=lambda:{'android':['3.10.15.301976']})]
+            self.engine_version='3.10.5.301327';self.g79_latest_version='3.10.15.301976'
+            self.patch_resources_hash='b'*32;self.rn_bundle_present=False
+        def bootstrap(self, **kw):
+            for body in (b'CDN not a zip',data.getvalue()):
+                response=Mock(url='https://cdn.example/manifest.zip',status_code=200,content=body,headers={})
+                for hook in self._session.hooks['response']:hook(response)
+    monkeypatch.setattr(client,'NeteaseClient',FakeClient)
+    result=m.discover(tmp_path,tmp_path)
+    assert result['mcp']['md5']=='a'*32 and result['mcp']['bytes']==3
+    assert len(result['requests'])==2

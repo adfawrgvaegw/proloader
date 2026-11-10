@@ -96,3 +96,21 @@ def test_unknown_code_profile_is_rejected_without_executing_it():
     with pytest.raises(ValueError):
         request(mcp_check.binary(),dict(marshal=base64.b64encode(b'unknown').decode(),salt='salt',
                                        unique_id=1,engine='3.9.15.297907',patch='3.9.43.301387'))
+
+
+@pytest.mark.parametrize('patch', ['3.10.12.301658','3.10.15.301976'])
+def test_3105_exact_pair_uses_same_reviewed_template_with_new_version_binding(patch):
+    source = mcp_check.ROOT/'cache/local_repair_20261027/server_dynamic_current.hex'
+    if not source.exists():pytest.skip('private delivered fixture absent')
+    response, profile = mcp_check.solve(source.read_text(), 'offline-test-salt', -12345,
+                                       '3.10.5.301327', patch)
+    import hashlib
+    calc=lambda text:hashlib.md5((text+'h5+ijo4gs8?').encode()).hexdigest()
+    val=calc('offline-test-salt0')
+    num=calc(''.join(str((ord(c)*2+5)^255) for c in val)+
+             '3.10.5.301327android'+patch+'android212-12345')
+    assert profile == '574eef18e0deb853d397c1344b805f513565623c9393c07511450b288bf8912a'
+    assert response == [val,calc(val[16:]+'False[]3'+num+val[:16]),False,[],'','',3,num]
+    with pytest.raises(ValueError):
+        mcp_check.solve(source.read_text(), 'offline-test-salt', -12345,
+                        '3.10.5.301327', '3.9.43.301387')

@@ -23,6 +23,7 @@ import logging
 import re
 from urllib.parse import urlsplit
 import secrets
+import time
 import uuid
 import zipfile
 from dataclasses import dataclass, field
@@ -30,7 +31,16 @@ from typing import Any, Optional
 
 import requests
 
-from .pe_profiles import OFFICIAL_ENGINE, OFFICIAL_PATCHES, PEMetadataMismatchError, PEAuthenticationError
+from .pe_profiles import verified_recipe, PEMetadataMismatchError, PEAuthenticationError
+
+
+class PublicMetadataError(ValueError):
+    """Safe public-download diagnostics; never retain arbitrary response text."""
+    def __init__(self, reason, attempts, http_status=None):
+        self.stage = 'android_manifest'
+        self.reason, self.attempts = reason, attempts
+        self.http_status = http_status if type(http_status) is int else None
+        super().__init__(f'Android manifest {reason} (attempts={attempts}, HTTP={self.http_status})')
 
 
 class RentalWorldEnterError(RuntimeError):
@@ -185,6 +195,7 @@ class NeteaseClient:
         self.user_detail: Optional[dict] = None
         self.cookie: str = ""
         self._session: requests.Session = requests.Session()
+        self._metadata_retries = []
         # 服务器 URL（默认硬编码，bootstrap 后可能更新）
         self.auth_server_url: str = AUTH_SERVER_URL
         self.core_server_url: str = CORE_SERVER_URL
@@ -204,6 +215,7 @@ class NeteaseClient:
         if self.platform == "ios":
             self._bootstrap_ios()
             return
+        self._metadata_retries = []
         try:
             if engine_source == "pack-list":
                 self._fetch_engine_version()
@@ -361,6 +373,39 @@ class NeteaseClient:
             raise ValueError("official Android package version missing")
         self.engine_version = version[1]
 
+    def _get_android_manifest(self, url):
+        """At most three public GETs; no stale metadata or auth/game retries."""
+        for attempt in range(1, 4):
+            response = None
+            reason, transient, status = None, False, None
+            try:
+                response = self._session.get(url, timeout=15)
+                status = response.status_code if type(response.status_code) is int else None
+                response.raise_for_status()
+                with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+                    data = json.loads(archive.read(archive.namelist()[0]))
+                if not isinstance(data, dict) or not isinstance(data.get('assets'), dict):
+                    raise ValueError('manifest_schema')
+                return data
+            except requests.HTTPError:
+                reason = 'http_error'
+                transient = status in (408, 429, 500, 502, 503, 504)
+            except (requests.Timeout, requests.ConnectionError):
+                reason, transient = 'network_error', True
+            except zipfile.BadZipFile:
+                # A truncated/HTML CDN response is not a valid replacement manifest.
+                reason, transient = 'invalid_zip', True
+            except (ValueError, UnicodeDecodeError, IndexError, KeyError):
+                reason = 'invalid_manifest'
+            finally:
+                if response is not None:
+                    response.close()
+            if not transient or attempt == 3:
+                raise PublicMetadataError(reason, attempt, status) from None
+            self._metadata_retries.append(dict(stage='android_manifest', reason=reason,
+                                                attempt=attempt, http_status=status))
+            time.sleep(0.25 * attempt)
+
     def _fetch_patch_metadata(self) -> None:
         """获取补丁版本和资源哈希。"""
         # 1. 获取补丁列表
@@ -391,18 +436,12 @@ class NeteaseClient:
         manifest_url = f"{pre}/manifest.zip"
 
         hash_base = ""
-        try:
-            resp = self._session.get(manifest_url, timeout=15)
-            resp.raise_for_status()
-            with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-                manifest_data = json.loads(zf.read(zf.namelist()[0]))
-            assets = manifest_data.get("assets", {})
-            if "vanilla.mcp" in assets:
-                hash_base = assets["vanilla.mcp"].get("md5", "")
-            if "vanilla_patch.mcp" in assets:
-                hash_base += assets["vanilla_patch.mcp"].get("md5", "")
-        except Exception:
-            raise ValueError("Android manifest unavailable or invalid") from None
+        manifest_data = self._get_android_manifest(manifest_url)
+        assets = manifest_data['assets']
+        if "vanilla.mcp" in assets:
+            hash_base = assets["vanilla.mcp"].get("md5", "")
+        if "vanilla_patch.mcp" in assets:
+            hash_base += assets["vanilla_patch.mcp"].get("md5", "")
         if not hash_base:
             raise ValueError("Android manifest missing vanilla hash")
 
@@ -443,16 +482,15 @@ class NeteaseClient:
         """
         self.user_id = self.user_token = ""
         self.user_detail = None
-        # Explicit diagnostic profile, bound to the inspected official APK and
-        # independently downloaded/verified patch MCPK. Never apply it to 3.10
-        # or silently carry its hashes forward to unexamined artifacts.
+        # Historical profile name retained for saved identities. Each engine
+        # selects its own artifact-reviewed library hash and native parameters.
         shipped_profile = self.pe_auth_profile == "official-android-3915"
-        if shipped_profile and (
-            self.platform != "android"
-            or self.engine_version != OFFICIAL_ENGINE
-            or (self.g79_latest_version,self.patch_resources_hash) not in OFFICIAL_PATCHES
-        ):
-            raise PEMetadataMismatchError(self.engine_version,self.g79_latest_version)
+        recipe = None
+        if shipped_profile:
+            if self.platform != "android":
+                raise PEMetadataMismatchError(self.engine_version, self.g79_latest_version)
+            recipe = verified_recipe(self.engine_version, self.g79_latest_version,
+                                     self.patch_resources_hash)
         self.cookie = cookie_str
 
         # 解析 cookie
@@ -483,11 +521,7 @@ class NeteaseClient:
             signature_hash = G79_SIGNATURE_HASH
             pay_channel = G79_ANDROID_MESSAGE_TAG
         if shipped_profile:
-            # libminecraftpe.so SHA256 953d4ebd...88c0c73d; MD5 of its
-            # complete APK entry. Certificate MD5 matches the legacy value.
-            # Native call 0x95fc1d4..0x95fc1dc selects (3, 6).
-            # See docs/rea-mcpk-auth-analysis.md for provenance and limits.
-            library_hash = "260a8b0499822c3f4fb4e35e8051afab"
+            library_hash, sign_sp, sign_rounds = recipe
 
         version_message = (
             self.engine_version
@@ -498,7 +532,7 @@ class NeteaseClient:
             + self.seed
         )
         if shipped_profile:
-            sign = pe_auth_sign(version_message, 3, 6, pad_full_block=True)
+            sign = pe_auth_sign(version_message, sign_sp, sign_rounds, pad_full_block=True)
         else:
             sign = pe_auth_sign(version_message, 2, 9)
 

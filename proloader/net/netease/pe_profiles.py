@@ -1,8 +1,14 @@
-"""Verified official Android 3.9.15 authentication metadata, not an arbitrary version fallback."""
-OFFICIAL_ENGINE='3.9.15.297907'
+"""Artifact-reviewed exact Android authentication recipes; no version fallback."""
+OFFICIAL_ENGINE='3.10.5.301327'
+OFFICIAL_PATCHES={
+    # Same-engine patch reviewed in docs/MAINTENANCE_20261111.md.
+    ('3.10.15.301976','a72549110aa25aadee47980bcebdd9e6'),
+    ('3.10.12.301658','833f5404381fb9011189467a1a4e50d2'),
+}
+LEGACY_ENGINE='3.9.15.297907'
 # Public official manifests + downloaded MCP MD5, selected auth methods compared
 # offline (not executed). New patch pairs require a new evidence-backed entry.
-OFFICIAL_PATCHES={
+LEGACY_PATCHES={
     ('3.9.41.300665','2d2833df3518783e52130aa8951c548f'),
     ('3.9.42.301055','65ce57607cdb2f70a040a1db7149279d'),
     # 3.9.43: reviewed selected-module diff; four auth methods unchanged.
@@ -22,3 +28,14 @@ class PEAuthenticationError(RuntimeError):
     def __init__(self,code):
         self.code=code if type(code) is int else None
         super().__init__(f'PE 认证失败 (code: {self.code})')
+
+
+def verified_recipe(engine, patch, resources_hash):
+    """Return only the native recipe belonging to an inspected exact pair."""
+    if engine == OFFICIAL_ENGINE and (patch, resources_hash) in OFFICIAL_PATCHES:
+        # Official 3.10.5 ARM64: call 0xe709070..78 -> 0xe91c2dc.
+        # See docs/MAINTENANCE_20261103.md for bytes, constants and acceptance.
+        return ("393dfdf6f78831f80a7e6aa305b21227", 2, 8)
+    if engine == LEGACY_ENGINE and (patch, resources_hash) in LEGACY_PATCHES:
+        return ("260a8b0499822c3f4fb4e35e8051afab", 3, 6)
+    raise PEMetadataMismatchError(engine, patch)

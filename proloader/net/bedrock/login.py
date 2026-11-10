@@ -384,14 +384,14 @@ def build_login_from_jwt_chain(
     """将认证 API 的 chain 编为 ConnectionRequest，RawToken 使用认证时的私钥。
 
     protocol=686 对齐 Fatalder protocol/login/request.go:Encode：前插客户端
-    ES384 JWT，chainJSON 为 {"chain":[...]}。860 保留现有 Certificate 封装。
+    ES384 JWT，chainJSON 为 {"chain":[...]}。860/898 使用 Certificate 封装（898对齐NTvector ce743787）。
     API 的 JWT 原文和顺序保留；这里只检查结构与末端公钥绑定，不验证 CA 信任。
     prepend_client_jwt=None 按协议选择；显式 bool 保留兼容旧调用方。
     """
     import struct
 
-    if protocol not in (686, 860):
-        raise ValueError("网易 Login 仅支持协议 686 或 860")
+    if protocol not in (686, 860, 898):
+        raise ValueError("网易 Login 仅支持协议 686、860 或 898")
     if not isinstance(priv.curve, ec.SECP384R1):
         raise ValueError("网易 Login 需要 P-384 私钥")
     if prepend_client_jwt is None:
@@ -448,7 +448,7 @@ def build_login_from_jwt_chain(
 
     # 686 使用 legacy chain；860 使用嵌套 Certificate。不可只改 Login 版本号。
     chain_obj = {"chain": new_chain}
-    if protocol == 860:
+    if protocol in (860, 898):
         cert_json = json.dumps(chain_obj, separators=(",", ":"))
         chain_obj = {"AuthenticationType": 0, "Certificate": cert_json, "Token": ""}
     chain_bytes = json.dumps(chain_obj, separators=(",", ":")).encode()

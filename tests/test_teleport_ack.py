@@ -16,7 +16,7 @@ def move(runtime=7,mode=2,position=(12027.5,88.62,12228.5)):
     return wrap_packet(19,w.to_bytes())
 
 
-@pytest.mark.parametrize('protocol',[686,860])
+@pytest.mark.parametrize('protocol',[686,860,898])
 @pytest.mark.parametrize('position',[(12027.5,88.62,12228.5),(-17.5,-60.25,-33.5)])
 def test_teleport_ack_matches_pinned_profile_codecs(position,protocol):
     out=subprocess.run([str(codec_binary())],input=json.dumps(dict(action='teleport_ack',protocol=protocol,player_position=position)),
@@ -27,13 +27,14 @@ def test_teleport_ack_matches_pinned_profile_codecs(position,protocol):
     assert PacketID.MOVE_PLAYER==19
 
 
-async def test_only_own_teleport_is_acknowledged_and_tasks_finish():
-    s=BedrockSession(None);s._netease_mode=True;s._netease_protocol=860;s._entity_runtime_id=7;s._teleport_ack_supported=True
+@pytest.mark.parametrize('protocol', [860, 898])
+async def test_only_own_teleport_is_acknowledged_and_tasks_finish(protocol):
+    s=BedrockSession(None);s._netease_mode=True;s._netease_protocol=protocol;s._entity_runtime_id=7;s._teleport_ack_supported=True
     s.send_packet=AsyncMock()
     for packet in [move(runtime=8),move(mode=0),move(),move()[:-2]]:s._dispatch_packet(packet)
     await asyncio.sleep(0);await asyncio.sleep(0)
     assert s.send_packet.call_count==1 and s._teleport_ack_count==1 and not s._teleport_ack_tasks
-    assert s.send_packet.call_args.args[0]==build_teleport_ack(s._last_server_position)
+    assert s.send_packet.call_args.args[0]==build_teleport_ack(s._last_server_position,protocol)
     await s.close()
 
 

@@ -28,7 +28,7 @@ def test_686_network_settings_and_start_game_prefix():
     assert (game.entity_unique_id, game.entity_runtime_id, game.player_game_type) == (-12345, 98765, 1)
 
 
-@pytest.mark.parametrize('protocol,expected', [(686, b'\x45\x08\x80\x01'), (860, b'\x45\x08\x40')])
+@pytest.mark.parametrize('protocol,expected', [(686, b'\x45\x08\x80\x01'), (860, b'\x45\x08\x40'), (898, b'\x45\x08\x40')])
 def test_chunk_radius_layout(protocol, expected):
     assert build_request_chunk_radius(4, 64, True, protocol=protocol) == expected
 
@@ -56,7 +56,7 @@ def test_reject_invalid_components(components):
         build_all_netease_login_packets(1, 2, bot_components=components)
 
 
-@pytest.mark.parametrize('protocol', [686, 860])
+@pytest.mark.parametrize('protocol', [686, 860, 898])
 async def test_initialization_order_and_distinct_entity_ids(protocol):
     # 登录已由 test_netease_login 验证；此处从资源包协商起模拟服务端。
     session = BedrockSession(AsyncMock())

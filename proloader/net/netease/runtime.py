@@ -6,8 +6,9 @@ from collections import deque
 from contextlib import asynccontextmanager
 
 from proloader.bots import BotStore, BotProfile
-from .client import NeteaseClient, RentalServerEntity, RentalWorldPending, RentalWorldEnterError
+from .client import NeteaseClient, RentalServerEntity, RentalWorldPending, RentalWorldEnterError, PublicMetadataError
 from .pe_profiles import PEMetadataMismatchError, PEAuthenticationError
+from .constants import CURRENT_RENTAL_PROTOCOL
 import requests
 from proloader.net.bedrock.crypto import generate_keypair, serialize_public_key_b64
 from proloader.net.bedrock.session import BedrockSession
@@ -146,6 +147,8 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
     try:
         stage('检查机器人身份')
         await asyncio.to_thread(client.bootstrap, engine_source='official-download')
+        for retry in getattr(client, '_metadata_retries', []):
+            event('metadata_retry', **retry)
         from .mcp_check import binary as mcp_check_binary
         await asyncio.to_thread(mcp_check_binary)
         pe = store.pe(bot)
@@ -187,7 +190,7 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
         await raknet.connect(timeout=15)
         event('raknet_online')
         bedrock = ObservedBedrock(raknet, netease_mode=True, netease_jwt_chain=chain,
-                                 netease_uid=int(client.user_id), netease_protocol=860, priv_key=key)
+                                 netease_uid=int(client.user_id), netease_protocol=CURRENT_RENTAL_PROTOCOL, priv_key=key)
         bedrock._netease_engine_version = client.engine_version
         bedrock._netease_patch_version = client.g79_latest_version
         bedrock._diagnostic_event = event
@@ -204,7 +207,9 @@ async def _rental_session(store: BotStore, bot: BotProfile, server_code: str, pa
     except Exception as exc:
         from proloader.net.bedrock.session import BedrockLoginError, BedrockDisconnectedError
         detail = dict(error_type=type(exc).__name__)
-        if isinstance(exc, BedrockDisconnectedError):
+        if isinstance(exc, PublicMetadataError):
+            detail.update(stage=exc.stage, reason=exc.reason, attempts=exc.attempts, http_status=exc.http_status)
+        elif isinstance(exc, BedrockDisconnectedError):
             detail['reason'] = exc.reason
         elif isinstance(exc, RentalError):
             detail['stage'] = exc.stage

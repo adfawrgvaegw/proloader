@@ -404,3 +404,12 @@ async def test_partial_height_reads_keep_default_nbt_strict_and_validate_envelop
     data['entries'][1]['offset']=[0,-2,0]
     with pytest.raises(ValueError,match='位置'):
         await session.read_subchunks((-17,-60,-33),'overworld',[-4,-3],allow_partial=True)
+
+
+def test_reviewed_898_command_block_includes_modern_filtered_name():
+    # NTvector ce743787 CommandBlockUpdate.cpp retains FilteredName before flags.
+    from proloader.net.bedrock.command_block import build_command_block_update
+    args=dict(mode=2,needs_redstone=True,conditional=False,command='say hi',name='named',
+              track_output=False,tick_delay=9,execute_on_first_tick=False)
+    assert build_command_block_update((-17,80,32),protocol=898,**args) == build_command_block_update((-17,80,32),protocol=860,**args)
+    assert build_command_block_update((-17,80,32),protocol=898,**args) != build_command_block_update((-17,80,32),protocol=686,**args)

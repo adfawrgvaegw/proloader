@@ -26,7 +26,7 @@ def allowed(relative):
     if relative.suffix.lower() in DENIED_SUFFIXES or relative.name in DENIED_NAMES:return False
     if len(parts)==1:return relative.name in ROOT_FILES
     if relative.as_posix()=='.github/workflows/ci.yml':return True
-    if parts[0]=='docs':return relative.as_posix() in {'docs/AI_CLI.md','docs/SNOW_MENU_INSTALL.md','docs/OTHER_NBT.md','docs/BDX_IMPORT.md','docs/ACCEPTANCE_20261028.md'}
+    if parts[0]=='docs':return relative.as_posix() in {'docs/AI_CLI.md','docs/SNOW_MENU_INSTALL.md','docs/OTHER_NBT.md','docs/BDX_IMPORT.md','docs/ACCEPTANCE_20261028.md','docs/MAINTENANCE_20261103.md','docs/MAINTENANCE_20261111.md'}
     if relative.as_posix()=='tools/gophertunnel_test/gophertunnel_test':return False
     return parts[0] in SOURCE_DIRS or parts[:3]==SKILL
 

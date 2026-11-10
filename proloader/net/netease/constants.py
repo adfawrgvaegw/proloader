@@ -7,6 +7,10 @@
 GAME_VERSION = "1.21.2"
 ENGINE_VERSION = "3.4.5.273121"
 
+# Active rental transport, independent of the PE engine/patch version.
+# NTvector ce743787, application.cpp; see docs/MAINTENANCE_20261111.md.
+CURRENT_RENTAL_PROTOCOL = 898
+
 # ── G79 哈希常量（PE 认证 message 组成部分）─────────────────
 G79_LIBRARY_HASH = "815873bdd82cb7a4ce422da361f7d60d"
 G79_SIGNATURE_HASH = "2b3e7ca013bb30a74d822579860c042b"

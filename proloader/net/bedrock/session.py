@@ -120,8 +120,8 @@ class BedrockSession:
         if netease_mode:
             if not netease_jwt_chain or priv_key is None:
                 raise ValueError("网易模式必须提供 JWT chain 和获取 chain 时的私钥")
-            if netease_protocol not in (686, 860):
-                raise ValueError("网易协议仅支持 686 或 860")
+            if netease_protocol not in (686, 860, 898):
+                raise ValueError("网易协议仅支持 686、860 或 898")
         elif netease_jwt_chain is not None:
             raise ValueError("外部网易 JWT chain 需要 netease_mode=True")
         # g79 租赁服 LoginResult 没有填充 BotComponent，默认空；其他认证来源可显式传入。
@@ -140,8 +140,9 @@ class BedrockSession:
         self._netease_protocol: int = netease_protocol
         self._mcp_challenge_tasks = set()
         # 860 was live-validated with the NEMC camera/ground extension, not the
-        # legacy 686 or vanilla PlayerAuthInput layout.
-        self._teleport_ack_supported = netease_mode and netease_protocol == 860
+        # legacy 686 or vanilla PlayerAuthInput layout. Protocol898 retains this
+        # exact layout in NTvector ce743787/Packets/PlayerAuthInput.h.
+        self._teleport_ack_supported = netease_mode and netease_protocol in (860, 898)
         # 网易解压器（有状态，维护跨 batch 的 32KB 滑动窗口字典）
         # fatalder compression.go:neteaseCompression.Decompress 用 dict 实现跨 batch 解压
         self._netease_decompressor: Optional[NeteaseDecompressor] = (
@@ -198,12 +199,12 @@ class BedrockSession:
     def _build_connection_request(self) -> bytes:
         """在发送任何包前校验 chain/密钥，并按协议生成登录数据。"""
         if self._netease_mode:
-            if self._netease_protocol == 860:
+            if self._netease_protocol in (860, 898):
                 # 网易模式：用外部 JWT chain（SendAuthV2Request 返回）
                 # ⚠️ GameVersion 对应协议版本 860 = MC 1.21.120
                 #    抓包确认网易客户端发 "1.21.120"（extract_game_version.py 提取）
                 #    发 "1.21.70" 会被服务器拒为 gameVersionMismatch
-                self._client_data.GameVersion = "1.21.120"
+                self._client_data.GameVersion = {860: "1.21.120", 898: "1.21.130"}[self._netease_protocol]
                 # ⚠️ 抓包确认网易客户端的 ClientData 字段值（extract_game_version.py）：
                 #    DeviceOS=2(iOS), UIProfile=1, CurrentInputMode=1, DefaultInputMode=2
                 #    PremiumSkin=True, TrustedSkin=True, CompatibleWithClientSideChunkGen=True
@@ -1052,7 +1053,7 @@ class BedrockSession:
         logger.info("← 收到 packet_id=%d [%d B]: %s", pid, len(packet), packet[:32].hex())
 
         if (pid == PacketID.MOVE_PLAYER and getattr(self,'_teleport_ack_supported',False) and getattr(self,'_netease_mode',False)
-                and getattr(self,'_netease_protocol',None) in (686,860)):
+                and getattr(self,'_netease_protocol',None) in (686,860,898)):
             from .movement import read_player_teleport,build_teleport_ack
             try:runtime_id,position,mode=read_player_teleport(packet)
             except (ValueError,EOFError):return
